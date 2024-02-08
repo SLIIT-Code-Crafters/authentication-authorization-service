@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,6 +26,9 @@ public class UserController {
 
 	@Autowired
 	private UserService service;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@PostMapping
 	public ResponseEntity<ResponseDto<userDto>> saveUser(@RequestParam("requestId") String requestId,
@@ -54,6 +58,9 @@ public class UserController {
 		userDto.setId(user.getId());
 		userDto.setFirstName(user.getFirstName());
 		userDto.setLastName(user.getLastName());
+		userDto.setUserName(user.getUserName());
+		userDto.setEmail(user.getEmail());
+		userDto.setPassword(user.getPassword());
 
 		return userDto;
 	}
@@ -63,6 +70,9 @@ public class UserController {
 		user.setId(userDto.getId());
 		user.setFirstName(userDto.getFirstName());
 		user.setLastName(userDto.getLastName());
+		user.setUserName(userDto.getUserName());
+		user.setEmail(userDto.getEmail());
+		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 
 		return user;
 	}
