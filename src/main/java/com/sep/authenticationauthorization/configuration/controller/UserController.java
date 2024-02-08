@@ -46,7 +46,7 @@ public class UserController {
 	@GetMapping("/get-user")
 	public ResponseEntity<String> getUser() {
 
-		return ResponseEntity.ok("Deployment Success Update!");
+		return ResponseEntity.ok("Deployment Success Update V2!");
 	}
 
 	private userDto convertEntityToDto(User user) {
