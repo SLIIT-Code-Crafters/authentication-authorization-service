@@ -29,4 +29,17 @@ public class User {
 
 	@Column(name = "last_name", nullable = false)
 	private String lastName;
+
+	@Column(name = "user_name", nullable = false, unique = true)
+	private String userName;
+
+	@Column(name = "email", nullable = false, unique = true)
+	private String email;
+
+	@Column(name = "password", nullable = false)
+	private String password;
+
+//	@ManyToMany
+//	@LazyCollection(LazyCollectionOption.FALSE)
+//	private Set<Role> roles;
 }
