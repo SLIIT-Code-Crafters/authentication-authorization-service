@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo Build started on `date`
+      - mvn clean install
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  files:
+   - target/authentication-authorization-service-0.0.1-SNAPSHOT.jar
+  discard-paths: yes
