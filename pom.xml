@@ -14,7 +14,7 @@
 	<name>authentication-authorization-service</name>
 	<description>Authentication and Authorization Service</description>
 	<properties>
-		<java.version>16</java.version>
+		<java.version>12</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -54,6 +54,11 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-compiler-plugin</artifactId>
+		    <version>3.12.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -69,14 +74,6 @@
 						</exclude>
 					</excludes>
 				</configuration>
-			</plugin>
-			<plugin>
-			    <groupId>org.apache.maven.plugins</groupId>
-			    <artifactId>maven-compiler-plugin</artifactId>
-			    <configuration>
-			        <source>16</source>
-			        <target>16</target>
-			    </configuration>
 			</plugin>
 		</plugins>
 	</build>
