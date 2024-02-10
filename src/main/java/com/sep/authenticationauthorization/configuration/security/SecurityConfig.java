@@ -23,10 +23,11 @@ public class SecurityConfig {
 	}
 
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().authorizeRequests().antMatchers("/v1/**").permitAll().anyRequest().authenticated();
-		http.headers().frameOptions().disable();
+	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth.requestMatchers("/v1/**").permitAll().anyRequest().authenticated());
 		return http.build();
+
 	}
 
 }
