@@ -28,18 +28,13 @@ public class SecurityConfig {
 	private final AuthenticationProvider authenticationProvider;
 
 	@Bean
-	public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-		return configuration.getAuthenticationManager();
-	}
-
-	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		
 		http
 			.csrf()
 			.disable()
 			.authorizeHttpRequests()
-			.requestMatchers()
+			.antMatchers("/api/v1/private/auth/**")
 			.permitAll()
 			.anyRequest()
 			.authenticated()

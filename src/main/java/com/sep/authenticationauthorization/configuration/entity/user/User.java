@@ -73,6 +73,9 @@ public class User implements UserDetails {
 
 	@Transient
 	private String masterToken;
+	
+	@Transient
+	private String authToken;
 
 	public String getOriginalUsername() {
 		return userName;
