@@ -3,6 +3,7 @@ package com.sep.authenticationauthorization.configuration.dto.user;
 import java.util.Set;
 
 import com.sep.authenticationauthorization.configuration.entity.role.Role;
+import com.sep.authenticationauthorization.configuration.enums.Roles;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,7 +36,11 @@ public class UserDto {
 
 	private String password;
 
-	private Set<Role> role;
+//	private Set<Role> role;
+	
+	private Roles role;
 
 	private String masterToken;
+	
+	private String authToken;
 }

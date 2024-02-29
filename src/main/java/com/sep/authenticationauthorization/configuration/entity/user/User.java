@@ -2,10 +2,13 @@ package com.sep.authenticationauthorization.configuration.entity.user;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -20,6 +23,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.sep.authenticationauthorization.configuration.entity.role.Role;
+import com.sep.authenticationauthorization.configuration.enums.Roles;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -67,9 +71,12 @@ public class User implements UserDetails {
 	@Column(name = "password", nullable = false)
 	private String password;
 
-	@ManyToMany
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private Set<Role> role;
+//	@ManyToMany
+//	@LazyCollection(LazyCollectionOption.FALSE)
+//	private Set<Role> role;
+	
+	@Enumerated(EnumType.STRING)
+	private Roles role;
 
 	@Transient
 	private String masterToken;
@@ -81,13 +88,18 @@ public class User implements UserDetails {
 		return userName;
 	}
 
+//	@Override
+//	public Collection<? extends GrantedAuthority> getAuthorities() {
+//		Set<GrantedAuthority> authorities = new HashSet<>();
+//		for (Role userRole : role) {
+//			authorities.add(new SimpleGrantedAuthority(userRole.getName().name()));
+//		}
+//		return authorities;
+//	}
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		Set<GrantedAuthority> authorities = new HashSet<>();
-		for (Role userRole : role) {
-			authorities.add(new SimpleGrantedAuthority(userRole.getName().name()));
-		}
-		return authorities;
+		return List.of(new SimpleGrantedAuthority(role.name()));
 	}
 
 	@Override

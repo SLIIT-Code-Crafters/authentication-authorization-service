@@ -5,13 +5,7 @@ import com.sep.authenticationauthorization.configuration.dto.authentication.Auth
 import com.sep.authenticationauthorization.configuration.entity.user.User;
 
 public interface AuthenticationService {
-
 	public User register(User user, String requestId);
 	
-//	public AuthenticationResponse register2(User user, String requestId);
-	
 	public AuthenticationResponse authenticate(AuthenticationRequest authRequest, String requestId);
-	
-	
-
 }

@@ -26,5 +26,4 @@ public class Role {
 	private Long id;
 
 	private Roles name;
-
 }

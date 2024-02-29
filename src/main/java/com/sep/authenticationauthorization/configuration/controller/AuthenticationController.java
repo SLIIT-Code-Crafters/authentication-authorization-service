@@ -42,6 +42,7 @@ public class AuthenticationController {
 		// Service Call.
 		UserDto dto = convertEntityToDto(service.register(convertDtoToEntity(userDto), requestId));
 		response.setData(dto);
+		response.setToken(dto.getAuthToken());
 		response.setMessage("User Saved Successfully");
 		response.setStatusCode(ResponseCodes.OK.code());
 		response.setTimestamp(LocalDateTime.now().toString());
@@ -80,6 +81,7 @@ public class AuthenticationController {
 		userDto.setPassword(passwordEncoder.encode(user.getPassword()));
 		userDto.setRole(user.getRole());
 		userDto.setMasterToken(user.getMasterToken());
+		userDto.setAuthToken(user.getAuthToken());
 
 		return userDto;
 	}
@@ -101,5 +103,4 @@ public class AuthenticationController {
 
 		return user;
 	}
-
 }

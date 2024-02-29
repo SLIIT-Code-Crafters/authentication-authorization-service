@@ -40,14 +40,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		}
 
 		return userResponse;
-
 	}
-
-//	@Override
-//	public AuthenticationResponse register2(User user, String requestId) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
 
 	@Override
 	public AuthenticationResponse authenticate(AuthenticationRequest authRequest, String requestId) {

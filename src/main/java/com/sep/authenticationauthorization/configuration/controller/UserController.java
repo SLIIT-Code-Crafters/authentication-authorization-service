@@ -13,8 +13,6 @@ public class UserController {
 	
 	@GetMapping("/login")
 	public ResponseEntity<String> login() {
-
 		return ResponseEntity.ok("Successfully Logged In!");
 	}
-
 }
