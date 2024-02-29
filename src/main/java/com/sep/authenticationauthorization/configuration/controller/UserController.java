@@ -30,8 +30,8 @@ public class UserController {
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
-	@PostMapping
-	public ResponseEntity<ResponseDto<userDto>> saveUser(@RequestParam("requestId") String requestId,
+	@PostMapping("/register")
+	public ResponseEntity<ResponseDto<userDto>> registerUser(@RequestParam("requestId") String requestId,
 			@RequestBody userDto userDto) {
 
 		ResponseDto<userDto> response = new ResponseDto<>();
@@ -43,6 +43,23 @@ public class UserController {
 		response.setMessage("User Saved Successfully");
 		response.setStatusCode(ResponseCodes.OK.code());
 		response.setTimestamp(LocalDateTime.now().toString());
+
+		return ResponseEntity.ok(response);
+	}
+	
+	@PostMapping("/authenticate")
+	public ResponseEntity<ResponseDto<userDto>> authenticateUser(@RequestParam("requestId") String requestId,
+			@RequestBody userDto userDto) {
+
+		ResponseDto<userDto> response = new ResponseDto<>();
+//		response.setRequestId(requestId);
+//
+//		// Service Call Test.
+//		userDto dto = convertEntityToDto(service.save(convertDtoToEntity(userDto), requestId));
+//		response.setData(dto);
+//		response.setMessage("User Saved Successfully");
+//		response.setStatusCode(ResponseCodes.OK.code());
+//		response.setTimestamp(LocalDateTime.now().toString());
 
 		return ResponseEntity.ok(response);
 	}
@@ -58,9 +75,15 @@ public class UserController {
 		userDto.setId(user.getId());
 		userDto.setFirstName(user.getFirstName());
 		userDto.setLastName(user.getLastName());
-		userDto.setUserName(user.getUserName());
 		userDto.setEmail(user.getEmail());
-		userDto.setPassword(user.getPassword());
+		userDto.setContactNo(user.getContactNo());
+		userDto.setAddressLine1(user.getAddressLine1());
+		userDto.setAddressLine2(user.getAddressLine2());
+		userDto.setAddressLine3(user.getAddressLine3());
+		userDto.setUserName(user.getOriginalUsername());
+		userDto.setPassword(passwordEncoder.encode(user.getPassword()));
+		userDto.setRole(user.getRole());
+		userDto.setMasterToken(user.getMasterToken());
 
 		return userDto;
 	}
@@ -70,9 +93,15 @@ public class UserController {
 		user.setId(userDto.getId());
 		user.setFirstName(userDto.getFirstName());
 		user.setLastName(userDto.getLastName());
-		user.setUserName(userDto.getUserName());
 		user.setEmail(userDto.getEmail());
+		user.setContactNo(userDto.getContactNo());
+		user.setAddressLine1(userDto.getAddressLine1());
+		user.setAddressLine2(userDto.getAddressLine2());
+		user.setAddressLine3(userDto.getAddressLine3());
+		user.setUserName(userDto.getUserName());
 		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+		user.setRole(userDto.getRole());
+		user.setMasterToken(userDto.getMasterToken());
 
 		return user;
 	}
