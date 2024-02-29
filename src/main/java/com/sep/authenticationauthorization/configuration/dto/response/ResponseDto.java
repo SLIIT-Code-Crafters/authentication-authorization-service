@@ -26,6 +26,8 @@ public class ResponseDto<T> {
 	private String message;
 
 	private T data;
+	
+	private String token;
 
 	@Override
 	public String toString() {
