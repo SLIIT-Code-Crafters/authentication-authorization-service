@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,9 +48,9 @@ public class AuthenticationController {
 
 		return ResponseEntity.ok(response);
 	}
-	
+
 	@PostMapping("/authenticate")
-	public ResponseEntity<ResponseDto<AuthenticationResponse>> authenticate (@RequestParam("requestId") String requestId,
+	public ResponseEntity<ResponseDto<AuthenticationResponse>> authenticate(@RequestParam("requestId") String requestId,
 			@RequestBody AuthenticationRequest authRequest) {
 
 		ResponseDto<AuthenticationResponse> response = new ResponseDto<>();
@@ -73,11 +72,15 @@ public class AuthenticationController {
 		userDto.setFirstName(user.getFirstName());
 		userDto.setLastName(user.getLastName());
 		userDto.setEmail(user.getEmail());
+		userDto.setUserName(user.getOriginalUsername());
+		userDto.setNic(user.getNic());
+		userDto.setGender(user.getGender());
+		userDto.setSalutation(user.getSalutation());
+		userDto.setDateOfBirth(user.getDateOfBirth());
 		userDto.setContactNo(user.getContactNo());
 		userDto.setAddressLine1(user.getAddressLine1());
 		userDto.setAddressLine2(user.getAddressLine2());
 		userDto.setAddressLine3(user.getAddressLine3());
-		userDto.setUserName(user.getOriginalUsername());
 		userDto.setPassword(passwordEncoder.encode(user.getPassword()));
 		userDto.setRole(user.getRole());
 		userDto.setMasterToken(user.getMasterToken());
@@ -92,11 +95,15 @@ public class AuthenticationController {
 		user.setFirstName(userDto.getFirstName());
 		user.setLastName(userDto.getLastName());
 		user.setEmail(userDto.getEmail());
+		user.setUserName(userDto.getUserName());
+		user.setNic(userDto.getNic());
+		user.setGender(userDto.getGender());
+		user.setSalutation(userDto.getSalutation());
+		user.setDateOfBirth(userDto.getDateOfBirth());
 		user.setContactNo(userDto.getContactNo());
 		user.setAddressLine1(userDto.getAddressLine1());
 		user.setAddressLine2(userDto.getAddressLine2());
 		user.setAddressLine3(userDto.getAddressLine3());
-		user.setUserName(userDto.getUserName());
 		user.setPassword(passwordEncoder.encode(userDto.getPassword()));
 		user.setRole(userDto.getRole());
 		user.setMasterToken(userDto.getMasterToken());

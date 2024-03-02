@@ -1,9 +1,12 @@
 package com.sep.authenticationauthorization.configuration.dto.user;
 
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-import com.sep.authenticationauthorization.configuration.entity.role.Role;
+import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
+import com.sep.authenticationauthorization.configuration.enums.Salutation;
+import com.sep.authenticationauthorization.configuration.enums.Status;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +27,16 @@ public class UserDto {
 
 	private String email;
 
+	private String userName;
+
+	private String nic;
+
+	private Gender gender;
+
+	private Salutation salutation;
+
+	private LocalDate dateOfBirth;
+
 	private String contactNo;
 
 	private String addressLine1;
@@ -32,15 +45,19 @@ public class UserDto {
 
 	private String addressLine3;
 
-	private String userName;
-
 	private String password;
 
 //	private Set<Role> role;
-	
+
 	private Roles role;
 
+	private Status status;
+
+	private LocalDateTime createdDate;
+
+	private LocalDateTime updatedDate;
+
 	private String masterToken;
-	
+
 	private String authToken;
 }
