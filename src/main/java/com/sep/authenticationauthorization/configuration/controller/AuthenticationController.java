@@ -39,7 +39,7 @@ public class AuthenticationController {
 		ResponseDto<UserDto> response = new ResponseDto<>();
 		response.setRequestId(requestId);
 
-		// Service Call.
+		// Service Call .
 		UserDto dto = convertEntityToDto(service.register(convertDtoToEntity(userDto), requestId));
 		response.setData(dto);
 		response.setToken(dto.getAuthToken());
