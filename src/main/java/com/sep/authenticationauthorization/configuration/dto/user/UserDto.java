@@ -3,9 +3,8 @@ package com.sep.authenticationauthorization.configuration.dto.user;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.sep.authenticationauthorization.configuration.enums.Gender;
-import com.sep.authenticationauthorization.configuration.enums.Roles;
-import com.sep.authenticationauthorization.configuration.enums.Salutation;
 import com.sep.authenticationauthorization.configuration.enums.Status;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto {
 
 	private Long id;
@@ -33,7 +33,7 @@ public class UserDto {
 
 	private Gender gender;
 
-	private Salutation salutation;
+	private String salutation;
 
 	private LocalDate dateOfBirth;
 
@@ -47,9 +47,7 @@ public class UserDto {
 
 	private String password;
 
-//	private Set<Role> role;
-
-	private Roles role;
+	private String role;
 
 	private Status status;
 

@@ -1,12 +1,13 @@
-package com.sep.authenticationauthorization.configuration.entity.role;
+package com.sep.authenticationauthorization.configuration.entity.mastertoken;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.sep.authenticationauthorization.configuration.enums.Roles;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +19,15 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "roles")
-public class Role {
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Table(name = "Master_Token")
+public class MasterToken {
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	private Roles name;
+	@Column(name = "master_token", nullable = false)
+	private String masterToken;
+
 }

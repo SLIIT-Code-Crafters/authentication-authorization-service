@@ -19,16 +19,16 @@ import lombok.RequiredArgsConstructor;
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
-	
+
 	@Autowired
 	private UserRepository repository;
-	
+
 	@Bean
 	public UserDetailsService userDetailsService() {
 		return username -> repository.findByEmail(username)
 				.orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
 	}
-	
+
 	@Bean
 	public AuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
@@ -36,15 +36,14 @@ public class ApplicationConfig {
 		authProvider.setPasswordEncoder(passwordEncoder());
 		return authProvider;
 	}
-	
+
 	@Bean
 	public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
 		return config.getAuthenticationManager();
 	}
-	
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
-	}
-
+	}	
 }

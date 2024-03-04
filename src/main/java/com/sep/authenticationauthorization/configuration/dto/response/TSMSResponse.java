@@ -2,7 +2,6 @@ package com.sep.authenticationauthorization.configuration.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
 
 import lombok.AllArgsConstructor;
@@ -14,19 +13,23 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(content = Include.NON_NULL)
-public class ResponseDto<T> {
+public class TSMSResponse {
 	private String timestamp;
 
 	private String requestId;
 
-	private int statusCode;
+	private boolean success;
 
 	private String message;
 
-	private T data;
-	
+	private int status;
+
+	private String code;
+
+	private Object data;
+
 	private String token;
 
 	@Override

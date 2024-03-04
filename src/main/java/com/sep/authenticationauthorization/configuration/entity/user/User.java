@@ -36,7 +36,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@Table(name = "users")
+@Table(name = "Users")
 public class User implements UserDetails {
 
 	private static final long serialVersionUID = 1L;
@@ -65,7 +65,7 @@ public class User implements UserDetails {
 	private Gender gender;
 
 	@Enumerated(EnumType.STRING)
-	@Column(name = "salutation")
+	@Column(name = "salutation", nullable = false)
 	private Salutation salutation;
 
 	@Column(name = "date_of_birth")
@@ -74,25 +74,27 @@ public class User implements UserDetails {
 	@Column(name = "contact_no", nullable = false)
 	private String contactNo;
 
-	@Column(name = "address_line_1", nullable = true)
+	@Column(name = "address_line_1")
 	private String addressLine1;
 
-	@Column(name = "address_line_2", nullable = true)
+	@Column(name = "address_line_2")
 	private String addressLine2;
 
-	@Column(name = "address_line_3", nullable = true)
+	@Column(name = "address_line_3")
 	private String addressLine3;
 
 	@Column(name = "password", nullable = false)
 	private String password;
 
 	@Enumerated(EnumType.STRING)
+	@Column(name = "role", nullable = false)
 	private Roles role;
 
+	@Column(name = "status")
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	@Column(name = "created_date")
+	@Column(name = "created_date", nullable = false)
 	private LocalDateTime createdDate;
 
 	@Column(name = "updated_date")
@@ -104,22 +106,9 @@ public class User implements UserDetails {
 	@Transient
 	private String authToken;
 
-//	@ManyToMany
-//	@LazyCollection(LazyCollectionOption.FALSE)
-//	private Set<Role> role;
-
 	public String getOriginalUsername() {
 		return userName;
 	}
-
-//	@Override
-//	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		Set<GrantedAuthority> authorities = new HashSet<>();
-//		for (Role userRole : role) {
-//			authorities.add(new SimpleGrantedAuthority(userRole.getName().name()));
-//		}
-//		return authorities;
-//	}
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -155,5 +144,4 @@ public class User implements UserDetails {
 	public String getPassword() {
 		return password;
 	}
-
 }

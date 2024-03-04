@@ -7,7 +7,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.sep.authenticationauthorization.configuration.entity.user.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-//	public User save(User user);
 
 	Optional<User> findByEmail(String email);
+	
+	User findByUserName(String username);
+	
+	boolean existsByEmail(String email);
+	
+	boolean existsByUserName(String userName);
+
 }
