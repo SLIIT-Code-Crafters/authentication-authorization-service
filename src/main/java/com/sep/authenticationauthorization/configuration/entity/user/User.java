@@ -1,9 +1,9 @@
 package com.sep.authenticationauthorization.configuration.entity.user;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,18 +12,18 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.sep.authenticationauthorization.configuration.entity.role.Role;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
+import com.sep.authenticationauthorization.configuration.enums.Salutation;
+import com.sep.authenticationauthorization.configuration.enums.Status;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,7 +35,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-@Table(name = "users")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Table(name = "Users")
 public class User implements UserDetails {
 
 	private static final long serialVersionUID = 1L;
@@ -53,34 +54,55 @@ public class User implements UserDetails {
 	@Column(name = "email", nullable = false, unique = true)
 	private String email;
 
+	@Column(name = "user_name", nullable = false, unique = true)
+	private String userName;
+
+	@Column(name = "nic")
+	private String nic;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "gender")
+	private Gender gender;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "salutation", nullable = false)
+	private Salutation salutation;
+
+	@Column(name = "date_of_birth")
+	private LocalDate dateOfBirth;
+
 	@Column(name = "contact_no", nullable = false)
 	private String contactNo;
 
-	@Column(name = "address_line_1", nullable = true)
+	@Column(name = "address_line_1")
 	private String addressLine1;
 
-	@Column(name = "address_line_2", nullable = true)
+	@Column(name = "address_line_2")
 	private String addressLine2;
 
-	@Column(name = "address_line_3", nullable = true)
+	@Column(name = "address_line_3")
 	private String addressLine3;
-
-	@Column(name = "user_name", nullable = false, unique = true)
-	private String userName;
 
 	@Column(name = "password", nullable = false)
 	private String password;
 
-//	@ManyToMany
-//	@LazyCollection(LazyCollectionOption.FALSE)
-//	private Set<Role> role;
-	
 	@Enumerated(EnumType.STRING)
+	@Column(name = "role", nullable = false)
 	private Roles role;
+
+	@Column(name = "status")
+	@Enumerated(EnumType.STRING)
+	private Status status;
+
+	@Column(name = "created_date", nullable = false)
+	private LocalDateTime createdDate;
+
+	@Column(name = "updated_date")
+	private LocalDateTime updatedDate;
 
 	@Transient
 	private String masterToken;
-	
+
 	@Transient
 	private String authToken;
 
@@ -88,15 +110,6 @@ public class User implements UserDetails {
 		return userName;
 	}
 
-//	@Override
-//	public Collection<? extends GrantedAuthority> getAuthorities() {
-//		Set<GrantedAuthority> authorities = new HashSet<>();
-//		for (Role userRole : role) {
-//			authorities.add(new SimpleGrantedAuthority(userRole.getName().name()));
-//		}
-//		return authorities;
-//	}
-	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return List.of(new SimpleGrantedAuthority(role.name()));
@@ -131,5 +144,4 @@ public class User implements UserDetails {
 	public String getPassword() {
 		return password;
 	}
-
 }

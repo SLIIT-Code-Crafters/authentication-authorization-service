@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +21,10 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtServiceImpl implements JwtService{
 	
-//	@Value("${secretKey}")
-	private static final String SECRET_KEY = "wYrHmUm5AuqKcgjkkl59ILMT7Ol+fB69uLAuT+JxzjdipxdFGlxFWXqi6i3gELYE";
+	@Value("${secretKey}")
+	private String SECRET_KEY;
+	
+//	private static final String SECRET_KEY = "wYrHmUm5AuqKcgjkkl59ILMT7Ol+fB69uLAuT+JxzjdipxdFGlxFWXqi6i3gELYE";
 
 	@Override
 	public String extractUserName(String token) {
@@ -47,8 +49,11 @@ public class JwtServiceImpl implements JwtService{
 				.setClaims(extraClaims)
 				.setSubject(userDetails.getUsername())
 				.setIssuedAt(new Date(System.currentTimeMillis()))
-				//Token will expire after 1000 milliseconds + 24 Hours - 1000 * 60 * 60 * 24
-				.setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+				//Token will expire after 24 hours.
+				.setExpiration(new Date(System.currentTimeMillis() + (1000 * 60 * 60 * 24)))
+				
+				//Token will expire after 5 minutes.
+//				.setExpiration(new Date(System.currentTimeMillis() + (5 * 60 * 1000)))
 				.signWith(getSignInKey(), SignatureAlgorithm.HS256)
 				.compact();
 	}
