@@ -125,7 +125,7 @@ public class AuthenticationController {
 				MasterToken masterToken = masterTokenService.getMasterToken();
 				if (!userDto.getMasterToken().equals(masterToken.getMasterToken())) {
 					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Master Token", requestId);
-					throw new TSMSException(TSMSError.INVALID_PASSWORD);
+					throw new TSMSException(TSMSError.INVALID_MASTER_TOKEN);
 				}
 			}
 
