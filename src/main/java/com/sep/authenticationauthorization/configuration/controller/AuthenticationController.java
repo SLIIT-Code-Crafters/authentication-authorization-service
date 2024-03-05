@@ -36,9 +36,6 @@ public class AuthenticationController {
 
 	@Autowired
 	private AuthenticationService service;
-	
-	@Autowired
-	private MasterTokenService masterTokenService;
 
 	@Autowired
 	private MasterTokenService masterTokenService;
@@ -128,7 +125,10 @@ public class AuthenticationController {
 				MasterToken masterToken = masterTokenService.getMasterToken();
 				if (!userDto.getMasterToken().equals(masterToken.getMasterToken())) {
 					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Master Token", requestId);
-			throw new TSMSException(TSMSError.INVALID_PASSWORD);
+					throw new TSMSException(TSMSError.INVALID_PASSWORD);
+				}
+			}
+
 		}
 		// TODO else role = TO send approval request to sysadmin
 
@@ -185,7 +185,7 @@ public class AuthenticationController {
 		response.setMessage("Authenticate Successfully");
 		response.setStatus(TSMSError.OK.getStatus());
 		response.setTimestamp(LocalDateTime.now().toString());
-    
+
 		LOGGER.info("END [REST-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return ResponseEntity.ok(response);
