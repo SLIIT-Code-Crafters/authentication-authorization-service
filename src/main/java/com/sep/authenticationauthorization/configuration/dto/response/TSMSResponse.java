@@ -16,6 +16,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TSMSResponse {
+
 	private String timestamp;
 
 	private String requestId;

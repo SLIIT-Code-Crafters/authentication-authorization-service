@@ -22,7 +22,7 @@ import lombok.Setter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Table(name = "Master_Token")
 public class MasterToken {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;

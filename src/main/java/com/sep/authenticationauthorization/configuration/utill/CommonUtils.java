@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
+import com.sep.authenticationauthorization.configuration.dto.login.LoginRequest;
 import com.sep.authenticationauthorization.configuration.dto.user.UserDto;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
@@ -92,18 +93,16 @@ public class CommonUtils {
 				|| (userDto.getPassword() == null || userDto.getPassword().isEmpty() || userDto.getPassword().isBlank()
 						|| userDto.getPassword().equals("")));
 	}
-	
+
 	public static boolean checkMasterTokenNullOrEmpty(String masterToken) {
-		return !((masterToken == null || masterToken.isEmpty() || masterToken.isBlank()
-				|| masterToken.equals("")));
+		return !((masterToken == null || masterToken.isEmpty() || masterToken.isBlank() || masterToken.equals("")));
 	}
-	
+
 	public static boolean checkAuthMandtoryFieldsNullOrEmpty(AuthenticationRequest request) {
 		return !((request.getEmail() == null || request.getEmail().isEmpty() || request.getEmail().isBlank()
 				|| request.getEmail().equals(""))
 				|| (request.getPassword() == null || request.getPassword().isEmpty() || request.getPassword().isBlank()
-						|| request.getPassword().equals(""))
-				);
+						|| request.getPassword().equals("")));
 	}
 
 	public static boolean isValidateRole(String role) {
@@ -129,12 +128,47 @@ public class CommonUtils {
 		Matcher matcher = pattern.matcher(password);
 		return matcher.matches();
 	}
-	
+
 	public static boolean isValidEmail(String email) {
-        String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
-    }
+		String regex = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(email);
+		return matcher.matches();
+	}
+
+	public static boolean isValidUserName(String userName) {
+		String regex = "^[a-zA-Z0-9_]+$";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher matcher = pattern.matcher(userName);
+		return matcher.matches() && !haveEmptySpace(userName);
+	}
+
+	public static String isUserNameOrEmail(String input) {
+
+		String emailPattern = "^(.+)@(.+)$";
+		String usernamePattern = "^[a-zA-Z0-9_]+$";
+
+		Pattern emailRegex = Pattern.compile(emailPattern);
+		Pattern usernameRegex = Pattern.compile(usernamePattern);
+
+		Matcher emailMatcher = emailRegex.matcher(input);
+		Matcher usernameMatcher = usernameRegex.matcher(input);
+
+		// Checking if input is an email or username
+		if (emailMatcher.matches()) {
+			return "EMAIL";
+		} else if (usernameMatcher.matches()) {
+			return "USERNAME";
+		} else {
+			return "Invalid Input";
+		}
+	}
+
+	public static boolean checkUserInputNullOrEmpty(LoginRequest request) {
+		return !((request.getUser() == null || request.getUser().isEmpty() || request.getUser().isBlank()
+				|| request.getUser().equals(""))
+				|| (request.getPassword() == null || request.getPassword().isEmpty() || request.getPassword().isBlank()
+						|| request.getPassword().equals("")));
+	}
 
 }

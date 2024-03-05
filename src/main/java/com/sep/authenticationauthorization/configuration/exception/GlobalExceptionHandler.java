@@ -12,7 +12,7 @@ import com.sep.authenticationauthorization.configuration.dto.response.TSMSRespon
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 	@ExceptionHandler(value = TSMSException.class)
 	public ResponseEntity<TSMSResponse> handleGlobleException(TSMSException dcnpException) {
@@ -29,7 +29,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(RuntimeException.class)
 	public ResponseEntity<TSMSResponse> handleGlobleException(RuntimeException e) {
 
-		logger.error("Exception occur  : {}", e.getMessage(), e);
+		LOGGER.error("Exception occur  : {}", e.getMessage(), e);
 
 		TSMSResponse response = new TSMSResponse();
 		response.setSuccess(true);
@@ -38,11 +38,11 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
-	
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<TSMSResponse> handleGlobleException(Exception e) {
 
-		logger.error("Exception occur  : {}", e.getMessage(), e);
+		LOGGER.error("Exception occur  : {}", e.getMessage(), e);
 
 		TSMSResponse response = new TSMSResponse();
 		response.setSuccess(true);
@@ -51,41 +51,4 @@ public class GlobalExceptionHandler {
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	}
-	
-//	@ExceptionHandler(AccessDeniedException.class)
-//	public ResponseEntity<TSMSResponse> handleGlobleException(AccessDeniedException e) {
-//
-//		logger.error("Exception occur  3: {}", e.getMessage(), e);
-//
-//		String errorMessage = "Access to the requested resource is forbidden.";
-//
-//		TSMSResponse response = new TSMSResponse();
-//		response.setSuccess(true);
-//		response.setStatus(HttpStatus.BAD_REQUEST.value());
-//		response.setMessage(e.getMessage());
-//
-//		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
-//	}
-//
-//	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-//	@ResponseBody
-//	public ResponseEntity<String> handleMethodNotAllowed(HttpRequestMethodNotSupportedException ex) {
-//		// Customize the message here
-//		String errorMessage = "The request method is not allowed for the requested endpoint.";
-//
-//		// Return a ResponseEntity with a custom message and 405 status code
-//		return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorMessage);
-//	}
-//
-//	@ExceptionHandler(AuthenticationException.class)
-//	public ResponseEntity<String> handleUnauthorizedException(AuthenticationException ex) {
-//		// Customize the message here
-//		String errorMessage = "Authentication is required to access this resource.";
-//
-//		// Return a ResponseEntity with a custom message and 401 status code
-//		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
-//	}
-
-	
-
 }

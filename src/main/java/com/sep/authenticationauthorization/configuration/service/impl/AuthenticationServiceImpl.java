@@ -15,6 +15,7 @@ import com.sep.authenticationauthorization.configuration.dto.authentication.Auth
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.entity.user.User;
 import com.sep.authenticationauthorization.configuration.enums.Status;
+import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
 import com.sep.authenticationauthorization.configuration.repository.UserRepository;
 import com.sep.authenticationauthorization.configuration.service.AuthenticationService;
@@ -53,6 +54,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			String jwtToken = jwtService.generateToken(user);
 			response.setAuthToken(jwtToken);
 		} catch (Exception e) {
+
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : exception={}", requestId, e.getMessage());
+			e.printStackTrace();
 			throw new TSMSException(TSMSError.REGISTRATION_FAILED);
 		}
 
@@ -62,19 +66,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	}
 
 	@Override
-	public AuthenticationResponse authenticate(AuthenticationRequest authRequest, String requestId) throws TSMSException {
-		
+	public AuthenticationResponse authenticate(AuthenticationRequest authRequest, String requestId)
+			throws TSMSException {
+
 		long startTime = System.currentTimeMillis();
 		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] authenticate: request={}", requestId,
 				CommonUtils.convertToString(authRequest));
-		
+
 		authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
 
+		// Repository Call
 		var user = repository.findByEmail(authRequest.getEmail())
 				.orElseThrow(() -> new TSMSException(TSMSError.USER_NOT_FOUND));
 		var jwtToken = jwtService.generateToken(user);
-		
+
 		AuthenticationResponse response = AuthenticationResponse.builder().token(jwtToken).build();
 
 		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
@@ -84,19 +90,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public Optional<User> getByEmail(String email, String requestId) throws TSMSException {
-		
+
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getByEmail: request={}", requestId,
-				email);
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getByEmail: request={}", requestId, email);
 
-		Optional<User> response  = repository.findByEmail(email);
+		Optional<User> response = repository.findByEmail(email);
 
-
-			// Repository Call
-			if(response.isEmpty()) {
-				throw new TSMSException(TSMSError.USER_NOT_FOUND);
-			}
-
+		// Repository Call
+		if (response.isEmpty()) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getByEmail : ", requestId);
+			throw new TSMSException(TSMSError.INVALID_EMAIL_OR_USER_NOT_FOUND);
+		}
 
 		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getByEmail: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
@@ -105,10 +109,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public User getByUserName(String userName, String requestId) throws TSMSException {
-		
+
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getByUserName: request={}", requestId,
-				userName);
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getByUserName: request={}", requestId, userName);
 
 		User response = new User();
 
@@ -116,6 +119,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			// Repository Call
 			response = repository.findByUserName(userName);
 		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getByUserName : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
 			throw new TSMSException(TSMSError.USER_NOT_FOUND);
 		}
 
@@ -126,10 +132,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public boolean isEmailExists(String email, String requestId) {
-		
+
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] isEmailExists: request={}", requestId,
-				email);
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] isEmailExists: request={}", requestId, email);
 
 		// Repository Call
 		boolean exists = repository.existsByEmail(email);
@@ -141,10 +146,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Override
 	public boolean isUserNameExists(String userName, String requestId) {
-		
+
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] isUserNameExists: request={}", requestId,
-				userName);
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] isUserNameExists: request={}", requestId, userName);
 
 		// Repository Call
 		boolean exists = repository.existsByUserName(userName);
