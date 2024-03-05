@@ -36,6 +36,9 @@ public class AuthenticationController {
 
 	@Autowired
 	private AuthenticationService service;
+	
+	@Autowired
+	private MasterTokenService masterTokenService;
 
 	@Autowired
 	private MasterTokenService masterTokenService;
@@ -93,7 +96,7 @@ public class AuthenticationController {
 			LOGGER.error(
 					"ERROR [REST-LAYER] [RequestId={}] register : An account associated with this username already exists",
 					requestId);
-			throw new TSMSException(TSMSError.USERNAME_EXIST);
+			throw new TSMSException(TSMSError.INVALID_LAST_NAME);
 		}
 
 		if (!CommonUtils.validatePhoneNumber(userDto.getContactNo())) {
@@ -125,9 +128,7 @@ public class AuthenticationController {
 				MasterToken masterToken = masterTokenService.getMasterToken();
 				if (!userDto.getMasterToken().equals(masterToken.getMasterToken())) {
 					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Master Token", requestId);
-					throw new TSMSException(TSMSError.INVALID_MASTER_TOKEN);
-				}
-			}
+			throw new TSMSException(TSMSError.INVALID_PASSWORD);
 		}
 		// TODO else role = TO send approval request to sysadmin
 
@@ -184,7 +185,7 @@ public class AuthenticationController {
 		response.setMessage("Authenticate Successfully");
 		response.setStatus(TSMSError.OK.getStatus());
 		response.setTimestamp(LocalDateTime.now().toString());
-
+    
 		LOGGER.info("END [REST-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return ResponseEntity.ok(response);

@@ -10,6 +10,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import com.sep.authenticationauthorization.configuration.codes.TSMSError;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.entity.user.User;
@@ -53,6 +54,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			String jwtToken = jwtService.generateToken(user);
 			response.setAuthToken(jwtToken);
 		} catch (Exception e) {
+
 			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : exception={}", requestId, e.getMessage());
 			e.printStackTrace();
 			throw new TSMSException(TSMSError.REGISTRATION_FAILED);
