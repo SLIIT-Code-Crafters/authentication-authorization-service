@@ -5,8 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sep.authenticationauthorization.configuration.codes.TSMSError;
 import com.sep.authenticationauthorization.configuration.entity.mastertoken.MasterToken;
+import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
 import com.sep.authenticationauthorization.configuration.repository.MasterTokenRepository;
 import com.sep.authenticationauthorization.configuration.service.MasterTokenService;

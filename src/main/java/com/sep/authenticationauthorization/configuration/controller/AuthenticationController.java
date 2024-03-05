@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sep.authenticationauthorization.configuration.codes.TSMSError;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
@@ -24,6 +23,7 @@ import com.sep.authenticationauthorization.configuration.entity.mastertoken.Mast
 import com.sep.authenticationauthorization.configuration.entity.user.User;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
+import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
 import com.sep.authenticationauthorization.configuration.service.AuthenticationService;
 import com.sep.authenticationauthorization.configuration.service.MasterTokenService;
@@ -36,7 +36,7 @@ public class AuthenticationController {
 
 	@Autowired
 	private AuthenticationService service;
-	
+
 	@Autowired
 	private MasterTokenService masterTokenService;
 
@@ -56,61 +56,82 @@ public class AuthenticationController {
 		TSMSResponse response = new TSMSResponse();
 
 		if (!CommonUtils.checkMandtoryFieldsNullOrEmpty(userDto)) {
+			LOGGER.error(
+					"ERROR [REST-LAYER] [RequestId={}] register : Mandatory fields are null. Please ensure all required fields are provided",
+					requestId);
 			throw new TSMSException(TSMSError.MANDOTORY_FIELDS_EMPTY);
 		}
 
 		if (!CommonUtils.containsOnlyLetters(userDto.getFirstName())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid First Name", requestId);
 			throw new TSMSException(TSMSError.INVALID_FIRST_NAME);
 		}
 
 		if (!CommonUtils.containsOnlyLetters(userDto.getLastName())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Last Name", requestId);
 			throw new TSMSException(TSMSError.INVALID_LAST_NAME);
 		}
-		
-		if(!CommonUtils.isValidEmail(userDto.getEmail())) {
+
+		if (!CommonUtils.isValidEmail(userDto.getEmail())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Email Address", requestId);
 			throw new TSMSException(TSMSError.INVALID_EMAIL);
 		}
-		
-		if(CommonUtils.haveEmptySpace(userDto.getUserName())) {
+
+		if (!CommonUtils.isValidUserName(userDto.getUserName())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid UserName", requestId);
 			throw new TSMSException(TSMSError.INVALID_USERNAME);
 		}
-		
-		if(service.isEmailExists(userDto.getEmail(), requestId)) {
+
+		if (service.isEmailExists(userDto.getEmail(), requestId)) {
+			LOGGER.error(
+					"ERROR [REST-LAYER] [RequestId={}] register : An account associated with this email already exists",
+					requestId);
 			throw new TSMSException(TSMSError.EMAIL_EXIST);
 		}
-		
-		if(service.isUserNameExists(userDto.getUserName(), requestId)) {
+
+		if (service.isUserNameExists(userDto.getUserName(), requestId)) {
+			LOGGER.error(
+					"ERROR [REST-LAYER] [RequestId={}] register : An account associated with this username already exists",
+					requestId);
 			throw new TSMSException(TSMSError.USERNAME_EXIST);
 		}
 
 		if (!CommonUtils.validatePhoneNumber(userDto.getContactNo())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Contact Number", requestId);
 			throw new TSMSException(TSMSError.INVALID_CONTACT_NO);
 		}
 
 		if (!CommonUtils.isValidateRole(userDto.getRole())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Role", requestId);
 			throw new TSMSException(TSMSError.INVALID_ROLE);
 		}
 
 		if (!CommonUtils.isValidateSalutation(userDto.getSalutation())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Salutation", requestId);
 			throw new TSMSException(TSMSError.INVALID_SALUTATION);
 		}
 
 		if (!CommonUtils.isValidPassword(userDto.getPassword())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Password", requestId);
 			throw new TSMSException(TSMSError.INVALID_PASSWORD);
 		}
-		
+
 		if (userDto.getRole().equals(Roles.SA.name())) {
-			if(!CommonUtils.checkMasterTokenNullOrEmpty(userDto.getMasterToken())) {
+			if (!CommonUtils.checkMasterTokenNullOrEmpty(userDto.getMasterToken())) {
+				LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Master Token mandatory for System Admin",
+						requestId);
 				throw new TSMSException(TSMSError.MASTER_TOKEN_MANDATORY);
 			} else {
 				MasterToken masterToken = masterTokenService.getMasterToken();
-				if(!userDto.getMasterToken().equals(masterToken.getMasterToken())) {
+				if (!userDto.getMasterToken().equals(masterToken.getMasterToken())) {
+					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Master Token", requestId);
 					throw new TSMSException(TSMSError.INVALID_MASTER_TOKEN);
 				}
 			}
 		}
+		// TODO else role = TO send approval request to sysadmin
 
-		// Service Call .
+		// Service Call.
 		UserDto dto = convertEntityToDto(service.register(convertDtoToEntity(userDto), requestId));
 		response.setRequestId(requestId);
 		response.setSuccess(true);
@@ -127,28 +148,35 @@ public class AuthenticationController {
 
 	@PostMapping("/authenticate")
 	public ResponseEntity<TSMSResponse> authenticate(@RequestParam("requestId") String requestId,
-			@RequestBody AuthenticationRequest authRequest) throws TSMSException{
+			@RequestBody AuthenticationRequest authRequest) throws TSMSException {
 
 		long startTime = System.currentTimeMillis();
 		LOGGER.info("START [REST-LAYER] [RequestId={}] authenticate: request={}", requestId,
 				CommonUtils.convertToString(authRequest));
-		
+
 		TSMSResponse response = new TSMSResponse();
 		response.setRequestId(requestId);
-		
-		if(!CommonUtils.checkAuthMandtoryFieldsNullOrEmpty(authRequest)) {
+
+		if (!CommonUtils.checkAuthMandtoryFieldsNullOrEmpty(authRequest)) {
+			LOGGER.error(
+					"ERROR [REST-LAYER] [RequestId={}] register : Mandatory fields are null. Please ensure all required fields are provided",
+					requestId);
 			throw new TSMSException(TSMSError.MANDOTORY_FIELDS_EMPTY);
 		}
-		
+
 		Optional<User> user = service.getByEmail(authRequest.getEmail(), requestId);
-		if(user.isEmpty()) {
+		if (user.isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : User Not Found", requestId);
 			throw new TSMSException(TSMSError.USER_NOT_FOUND);
 		} else {
-			if(!passwordEncoder.matches(authRequest.getPassword(), user.get().getPassword())) {
+			if (!passwordEncoder.matches(authRequest.getPassword(), user.get().getPassword())) {
+				LOGGER.error(
+						"ERROR [REST-LAYER] [RequestId={}] register : Password incorrect. Please verify your password and try again",
+						requestId);
 				throw new TSMSException(TSMSError.INCORRECT_PASSWORD);
 			}
 		}
-		
+
 		// Service Call.
 		AuthenticationResponse authResponse = service.authenticate(authRequest, requestId);
 		response.setSuccess(true);
@@ -156,8 +184,7 @@ public class AuthenticationController {
 		response.setMessage("Authenticate Successfully");
 		response.setStatus(TSMSError.OK.getStatus());
 		response.setTimestamp(LocalDateTime.now().toString());
-		
-		
+
 		LOGGER.info("END [REST-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return ResponseEntity.ok(response);

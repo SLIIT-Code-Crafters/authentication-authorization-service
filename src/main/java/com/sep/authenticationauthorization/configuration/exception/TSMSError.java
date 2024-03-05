@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.codes;
+package com.sep.authenticationauthorization.configuration.exception;
 
 public enum TSMSError {
 
@@ -22,9 +22,12 @@ public enum TSMSError {
 	INVALID_MASTER_TOKEN("018", 400, "Invalid Master Token"),
 	AUTH_TOKEN_EXPIRED("019", 401, "Authentication Token Expired"),
 	INVALID_EMAIL("020", 400, "Invalid Email Address"),
-	INVALID_USERNAME("022", 400, "Invalid UserName"),
-	EMAIL_EXIST("023", 409, "An account associated with this email already exists"),
-	USERNAME_EXIST("024", 409, "An account associated with this username already exists");
+	INVALID_USERNAME("021", 400, "Invalid UserName"),
+	EMAIL_EXIST("022", 409, "An account associated with this email already exists"),
+	USERNAME_EXIST("023", 409, "An account associated with this username already exists"),
+	INVALID_EMAIL_USERNAME("024", 400, "Invalid Email Address or Username"),
+	INVALID_EMAIL_OR_USER_NOT_FOUND("025", 404, "Invalid Email or User Not Found"),
+	INVALID_USERNAME_OR_USER_NOT_FOUND("027", 404, "Invalid Username or User Not Found");
 
 	private int status;
 	private String code;

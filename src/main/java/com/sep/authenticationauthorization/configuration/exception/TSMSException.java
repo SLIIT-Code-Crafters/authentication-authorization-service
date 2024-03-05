@@ -1,7 +1,5 @@
 package com.sep.authenticationauthorization.configuration.exception;
 
-import com.sep.authenticationauthorization.configuration.codes.TSMSError;
-
 public class TSMSException extends Exception {
 
 	private TSMSError error;

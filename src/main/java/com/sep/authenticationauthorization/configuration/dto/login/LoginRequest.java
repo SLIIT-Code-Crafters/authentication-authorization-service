@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.dto.authentication;
+package com.sep.authenticationauthorization.configuration.dto.login;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class AuthenticationRequest {
+public class LoginRequest {
 
-	private String email;
+	private String user;
 
 	private String password;
 
