@@ -91,7 +91,7 @@ public class AuthenticationController {
 			LOGGER.error(
 					"ERROR [REST-LAYER] [RequestId={}] register : An account associated with this username already exists",
 					requestId);
-			throw new TSMSException(TSMSError.INVALID_LAST_NAME);
+			throw new TSMSException(TSMSError.USERNAME_EXIST);
 		}
 
 		if (!CommonUtils.validatePhoneNumber(userDto.getContactNo())) {
