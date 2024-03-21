@@ -28,7 +28,6 @@ import com.sep.authenticationauthorization.configuration.service.AuthenticationS
 import com.sep.authenticationauthorization.configuration.service.MasterTokenService;
 import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
 
-//@CrossOrigin("*")
 @RestController
 @RequestMapping("/api/v1/private/auth")
 public class AuthenticationController {
