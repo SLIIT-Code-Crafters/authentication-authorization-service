@@ -18,20 +18,4 @@ public class CorsConfig  implements WebMvcConfigurer{
 				.allowedMethods("*");
 	}
 	
-//	@Bean
-//	public WebMvcConfigurer corsConfigure() {
-//		return new WebMvcConfigurer() {
-//
-//			@Override
-//			public void addCorsMappings(final CorsRegistry registry) {
-//				registry.addMapping("/**")
-//						.allowCredentials(true)
-//						.allowedOrigins("http://localhost:4200","http://travel-trek-angular-client.s3-website-ap-southeast-1.amazonaws.com")
-//						.allowedMethods(HttpMethod.GET.name(),HttpMethod.POST.name(),HttpMethod.PUT.name(),HttpMethod.DELETE.name(),HttpMethod.PATCH.name(),HttpMethod.OPTIONS.name())
-//						.allowedHeaders("*")
-//                        .maxAge(3600);
-//			}
-//		};
-//	}
-//	
 }
