@@ -12,11 +12,14 @@ import org.springframework.stereotype.Service;
 
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
+import com.sep.authenticationauthorization.configuration.entity.approval.Approval;
 import com.sep.authenticationauthorization.configuration.entity.user.User;
+import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Status;
 import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
 import com.sep.authenticationauthorization.configuration.repository.UserRepository;
+import com.sep.authenticationauthorization.configuration.service.ApprovalService;
 import com.sep.authenticationauthorization.configuration.service.AuthenticationService;
 import com.sep.authenticationauthorization.configuration.service.JwtService;
 import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
@@ -32,6 +35,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
+	
+	@Autowired
+	private ApprovalService approvalService;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
@@ -52,6 +58,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			response = repository.save(user);
 			String jwtToken = jwtService.generateToken(user);
 			response.setAuthToken(jwtToken);
+			
+			if(user.getRole().equals(Roles.TO)) {
+				Approval approval = new Approval();
+				approval.setId(response.getId());
+				approval.setContent(response.getFirstName()
+															.concat(" ")
+															.concat(response.getLastName())
+															.concat(" wants to create an Trip Organizer account"));
+				approval.setCreatedBy(response.getFirstName()
+															.concat(" ")
+															.concat(response.getLastName()));
+				approval.setEmail(response.getEmail());
+				approval.setReason("Trip Organizer Account Creation Request");
+				
+				approvalService.save(approval, requestId);
+			}
 		} catch (Exception e) {
 
 			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : exception={}", requestId, e.getMessage());
