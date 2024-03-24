@@ -128,7 +128,6 @@ public class AuthenticationController {
 			}
 
 		}
-		// TODO else role = TO send approval request to sysadmin
 
 		// Service Call.
 		UserDto dto = convertEntityToDto(service.register(convertDtoToEntity(userDto), requestId));

@@ -27,7 +27,8 @@ public enum TSMSError {
 	USERNAME_EXIST("023", 409, "An account associated with this username already exists"),
 	INVALID_EMAIL_USERNAME("024", 400, "Invalid Email Address or Username"),
 	INVALID_EMAIL_OR_USER_NOT_FOUND("025", 404, "Invalid Email or User Not Found"),
-	INVALID_USERNAME_OR_USER_NOT_FOUND("027", 404, "Invalid Username or User Not Found");
+	INVALID_USERNAME_OR_USER_NOT_FOUND("026", 404, "Invalid Username or User Not Found"),
+	APPROVAL_FAILED("027", 404, "Approval Failed");
 
 	private int status;
 	private String code;
