@@ -1,10 +1,8 @@
 package com.sep.authenticationauthorization.configuration.dto.user;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Status;
 
 import lombok.AllArgsConstructor;
@@ -31,11 +29,11 @@ public class UserDto {
 
 	private String nic;
 
-	private Gender gender;
+	private String gender;
 
 	private String salutation;
 
-	private LocalDate dateOfBirth;
+	private String dateOfBirth;
 
 	private String contactNo;
 
@@ -58,4 +56,11 @@ public class UserDto {
 	private String masterToken;
 
 	private String authToken;
+
+	private String profilePictureName;
+
+	private String profilePictureContent;
+
+	private String profilePictureUrl;
+
 }
