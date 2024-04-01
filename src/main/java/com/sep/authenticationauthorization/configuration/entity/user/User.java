@@ -1,6 +1,5 @@
 package com.sep.authenticationauthorization.configuration.entity.user;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -69,7 +68,7 @@ public class User implements UserDetails {
 	private Salutation salutation;
 
 	@Column(name = "date_of_birth")
-	private LocalDate dateOfBirth;
+	private String dateOfBirth;
 
 	@Column(name = "contact_no", nullable = false)
 	private String contactNo;
@@ -99,6 +98,9 @@ public class User implements UserDetails {
 
 	@Column(name = "updated_date")
 	private LocalDateTime updatedDate;
+
+	@Column(name = "profile_picture_url")
+	private String profilePictureUrl;
 
 	@Transient
 	private String masterToken;

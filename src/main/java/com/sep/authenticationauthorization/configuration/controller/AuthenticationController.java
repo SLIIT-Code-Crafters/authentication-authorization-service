@@ -20,6 +20,7 @@ import com.sep.authenticationauthorization.configuration.dto.response.TSMSRespon
 import com.sep.authenticationauthorization.configuration.dto.user.UserDto;
 import com.sep.authenticationauthorization.configuration.entity.mastertoken.MasterToken;
 import com.sep.authenticationauthorization.configuration.entity.user.User;
+import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
 import com.sep.authenticationauthorization.configuration.exception.TSMSError;
@@ -196,8 +197,13 @@ public class AuthenticationController {
 		userDto.setEmail(user.getEmail());
 		userDto.setUserName(user.getOriginalUsername());
 		userDto.setNic(user.getNic());
-		userDto.setGender(user.getGender());
-		userDto.setSalutation(user.getSalutation().name());
+		if (user.getGender() != null) {
+			userDto.setGender(user.getGender().name());
+		}
+
+		if (user.getSalutation() != null) {
+			userDto.setSalutation(user.getSalutation().name());
+		}
 		userDto.setDateOfBirth(user.getDateOfBirth());
 		userDto.setContactNo(user.getContactNo());
 		userDto.setAddressLine1(user.getAddressLine1());
@@ -242,13 +248,25 @@ public class AuthenticationController {
 			user.setSalutation(Salutation.REV);
 		}
 
+		if (userDto.getGender() != null) {
+
+			String gender = userDto.getGender();
+
+			if (gender.equals(Gender.M.name())) {
+				user.setGender(Gender.M);
+			} else if (gender.equals(Gender.F.name())) {
+				user.setGender(Gender.F);
+			} else if (gender.equals(Gender.O.name())) {
+				user.setGender(Gender.O);
+			}
+		}
+
 		user.setId(userDto.getId());
 		user.setFirstName(userDto.getFirstName());
 		user.setLastName(userDto.getLastName());
 		user.setEmail(userDto.getEmail());
 		user.setUserName(userDto.getUserName());
 		user.setNic(userDto.getNic());
-		user.setGender(userDto.getGender());
 
 		user.setDateOfBirth(userDto.getDateOfBirth());
 		user.setContactNo(userDto.getContactNo());
