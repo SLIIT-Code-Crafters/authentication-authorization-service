@@ -41,7 +41,7 @@ public class LoginServiceImpl implements LoginService {
 	@Value("${adminApprovalStatusApi}")
 	private String AdminApprovalStatusApiUrl;
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(LoginServiceImpl.class);
 
 	@Override
 	public Boolean login(String userInput, String userNameOrEmail, String loginPassword, String requestId)

@@ -227,7 +227,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	public AccountStatus getAccountStatusByEmail(String email, String requestId) throws TSMSException {
 
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: request={}", requestId, email);
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getAccountStatusByEmail: request={}", requestId, email);
 
 		Optional<User> response;
 
@@ -235,13 +235,13 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			// Repository Call
 			response = repository.findByEmail(email);
 		} catch (Exception e) {
-			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getAccountStatusByUserName : exception={}", requestId,
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getAccountStatusByEmail : exception={}", requestId,
 					e.getMessage());
 			e.printStackTrace();
 			throw new TSMSException(TSMSError.USER_NOT_FOUND);
 		}
 
-		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: timeTaken={}|response={}",
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByEmail: timeTaken={}|response={}",
 				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return response.isPresent() ? response.get().getAccountStatus() : null;
 	}

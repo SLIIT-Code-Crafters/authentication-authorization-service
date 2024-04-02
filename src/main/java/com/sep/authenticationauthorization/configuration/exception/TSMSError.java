@@ -31,10 +31,10 @@ public enum TSMSError {
 	APPROVAL_REQUEST_CREATION_FAILED("027", 404, "Approval Request Creation Failed"),
 	APPROVAL_API_CALL_FAILED("028", 404, "Approval Api Call Failed"),
 	ACCOUNT_NOT_ACTIVATED("029", 403, "Account is not Activated, Please activate your account before login"),
-	ACCOUNT_IS_INACTIVE("029", 403, "Account is Inactive or Deactivated, Please create a new account"),
-	FAILED("030", 401, "FAILED"),
-	ACCOUNT_APPROVAL_PENDING("031", 202, "Account Approval is in Pending Status"),
-	ACCOUNT_REJECTED("032", 403, "Account is Rejected by System Admin");
+	ACCOUNT_IS_INACTIVE("030", 403, "Account is Inactive or Deactivated, Please create a new account"),
+	FAILED("031", 401, "FAILED"),
+	ACCOUNT_APPROVAL_PENDING("032", 202, "Account Approval is in Pending Status"),
+	ACCOUNT_REJECTED("033", 403, "Account is Rejected by System Admin");
 	
 	
 
