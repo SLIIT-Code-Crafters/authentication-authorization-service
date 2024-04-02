@@ -1,13 +1,11 @@
 package com.sep.authenticationauthorization.configuration.controller;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,10 +14,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.sep.authenticationauthorization.configuration.dto.login.LoginRequest;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
-import com.sep.authenticationauthorization.configuration.entity.user.User;
 import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
-import com.sep.authenticationauthorization.configuration.service.AuthenticationService;
+import com.sep.authenticationauthorization.configuration.service.LoginService;
 import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
 
 @RestController
@@ -27,14 +24,10 @@ import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
 public class LoginController {
 
 	@Autowired
-	private AuthenticationService service;
-
-	@Autowired
-	private PasswordEncoder passwordEncoder;
+	private LoginService service;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationController.class);
 
-	
 	@PostMapping("/login")
 	public ResponseEntity<TSMSResponse> login(@RequestParam("requestId") String requestId,
 			@RequestBody LoginRequest loginRequest) throws TSMSException {
@@ -54,49 +47,24 @@ public class LoginController {
 		}
 
 		String userInput = CommonUtils.isUserNameOrEmail(loginRequest.getUser());
-		String password = "";
 
-		if (userInput.equals("EMAIL")) {
+		Boolean success = service.login(userInput, loginRequest.getUser(), loginRequest.getPassword(), requestId);
 
-			// Service Call.
-			Optional<User> user = service.getByEmail(loginRequest.getUser(), requestId);
-			if (user.isEmpty()) {
-				LOGGER.error("ERROR [REST-LAYER] [RequestId={}] login : Invalid Email or User Not Found", requestId);
-				throw new TSMSException(TSMSError.INVALID_EMAIL_OR_USER_NOT_FOUND);
-			} else {
-				password = user.get().getPassword();
-			}
-
-		} else if (userInput.equals("USERNAME")) {
-
-			// Service Call.
-			User user = service.getByUserName(loginRequest.getUser(), requestId);
-			if (user != null) {
-				password = user.getPassword();
-			} else {
-				LOGGER.error("ERROR [REST-LAYER] [RequestId={}] login : Invalid Username or User Not Found", requestId);
-				throw new TSMSException(TSMSError.INVALID_USERNAME_OR_USER_NOT_FOUND);
-			}
-
+		if (success) {
+			response.setSuccess(true);
+			response.setMessage("User Login Successfull");
+			response.setStatus(TSMSError.OK.getStatus());
 		} else {
-			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] login : Invalid Email Address or Username", requestId);
-			throw new TSMSException(TSMSError.INVALID_EMAIL_USERNAME);
+			response.setSuccess(false);
+			response.setMessage("User Login Failed");
+			response.setStatus(TSMSError.FAILED.getStatus());
 		}
 
-		if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
-			LOGGER.error(
-					"ERROR [REST-LAYER] [RequestId={}] login : Password incorrect. Please verify your password and try again",
-					requestId);
-			throw new TSMSException(TSMSError.INCORRECT_PASSWORD);
-		}
-
-		response.setSuccess(true);
-		response.setMessage("User Login Successfull");
-		response.setStatus(TSMSError.OK.getStatus());
 		response.setTimestamp(LocalDateTime.now().toString());
 
 		LOGGER.info("END [REST-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return ResponseEntity.ok(response);
 	}
+
 }

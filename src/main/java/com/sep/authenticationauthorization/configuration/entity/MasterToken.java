@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.entity.mastertoken;
+package com.sep.authenticationauthorization.configuration.entity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

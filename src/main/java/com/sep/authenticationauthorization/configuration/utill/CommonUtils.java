@@ -1,13 +1,14 @@
 package com.sep.authenticationauthorization.configuration.utill;
 
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sep.authenticationauthorization.configuration.dto.UserDto;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.login.LoginRequest;
-import com.sep.authenticationauthorization.configuration.dto.user.UserDto;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
 
@@ -169,6 +170,14 @@ public class CommonUtils {
 				|| request.getUser().equals(""))
 				|| (request.getPassword() == null || request.getPassword().isEmpty() || request.getPassword().isBlank()
 						|| request.getPassword().equals("")));
+	}
+
+	public static String generateActivationCode() {
+		Random random = new Random();
+		int min = 100000;
+		int max = 999999;
+		int code = random.nextInt(max - min + 1) + min;
+		return String.valueOf(code);
 	}
 
 }

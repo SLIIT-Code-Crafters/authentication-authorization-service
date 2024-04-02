@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.entity.approval;
+package com.sep.authenticationauthorization.configuration.entity;
 
 import java.time.LocalDateTime;
 
