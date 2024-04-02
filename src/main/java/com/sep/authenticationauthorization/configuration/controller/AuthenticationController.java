@@ -14,12 +14,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sep.authenticationauthorization.configuration.dto.UserDto;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
-import com.sep.authenticationauthorization.configuration.dto.user.UserDto;
-import com.sep.authenticationauthorization.configuration.entity.mastertoken.MasterToken;
-import com.sep.authenticationauthorization.configuration.entity.user.User;
+import com.sep.authenticationauthorization.configuration.entity.MasterToken;
+import com.sep.authenticationauthorization.configuration.entity.User;
 import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;

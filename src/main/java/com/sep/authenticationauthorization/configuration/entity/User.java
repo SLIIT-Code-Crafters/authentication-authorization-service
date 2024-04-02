@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.entity.user;
+package com.sep.authenticationauthorization.configuration.entity;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -19,6 +19,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
 import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
@@ -93,6 +94,10 @@ public class User implements UserDetails {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
+	@Column(name = "account_status")
+	@Enumerated(EnumType.STRING)
+	private AccountStatus accountStatus;
+
 	@Column(name = "created_date", nullable = false)
 	private LocalDateTime createdDate;
 
@@ -101,6 +106,9 @@ public class User implements UserDetails {
 
 	@Column(name = "profile_picture_url")
 	private String profilePictureUrl;
+
+	@Column(name = "activation_code")
+	private String activationCode;
 
 	@Transient
 	private String masterToken;

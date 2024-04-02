@@ -1,4 +1,4 @@
-package com.sep.authenticationauthorization.configuration.dto.user;
+package com.sep.authenticationauthorization.configuration.dto;
 
 import java.time.LocalDateTime;
 

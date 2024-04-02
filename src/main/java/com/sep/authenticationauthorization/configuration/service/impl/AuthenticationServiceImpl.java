@@ -20,8 +20,9 @@ import org.springframework.web.client.RestTemplate;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
-import com.sep.authenticationauthorization.configuration.entity.approval.Approval;
-import com.sep.authenticationauthorization.configuration.entity.user.User;
+import com.sep.authenticationauthorization.configuration.entity.Approval;
+import com.sep.authenticationauthorization.configuration.entity.User;
+import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Status;
 import com.sep.authenticationauthorization.configuration.exception.TSMSError;
@@ -63,6 +64,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 		user.setCreatedDate(LocalDateTime.now());
 		user.setStatus(Status.W);
+		user.setAccountStatus(AccountStatus.PENDING);
+		user.setActivationCode(CommonUtils.generateActivationCode());
 
 		try {
 			// Repository Call
@@ -87,6 +90,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 					throw new TSMSException(TSMSError.APPROVAL_REQUEST_CREATION_FAILED);
 				}
 			}
+
+			// Send user activation email.
+			String activationCode = response.getActivationCode();
+			System.out.println("ACTIVATIONCODE=" + activationCode);
+
 		} catch (Exception e) {
 
 			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : exception={}", requestId, e.getMessage());
@@ -192,6 +200,52 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return exists;
 	}
 
+	@Override
+	public AccountStatus getAccountStatusByUserName(String userName, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: request={}", requestId, userName);
+
+		User response = new User();
+
+		try {
+			// Repository Call
+			response = repository.findByUserName(userName);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getAccountStatusByUserName : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: timeTaken={}|response={}",
+				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return response.getAccountStatus() != null ? response.getAccountStatus() : null;
+	}
+
+	@Override
+	public AccountStatus getAccountStatusByEmail(String email, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: request={}", requestId, email);
+
+		Optional<User> response;
+
+		try {
+			// Repository Call
+			response = repository.findByEmail(email);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  getAccountStatusByUserName : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByUserName: timeTaken={}|response={}",
+				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return response.isPresent() ? response.get().getAccountStatus() : null;
+	}
+
 	private ResponseEntity<TSMSResponse> callApprovalRequestApi(Approval approval, String requestId)
 			throws TSMSException {
 
@@ -227,4 +281,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return String.format("{\"id\":%d,\"email\":\"%s\",\"content\":\"%s\",\"reason\":\"%s\",\"createdBy\":\"%s\"}",
 				id, email, content, reason, createdBy);
 	}
+
 }

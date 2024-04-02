@@ -4,7 +4,8 @@ import java.util.Optional;
 
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
-import com.sep.authenticationauthorization.configuration.entity.user.User;
+import com.sep.authenticationauthorization.configuration.entity.User;
+import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
 
 public interface AuthenticationService {
@@ -20,4 +21,8 @@ public interface AuthenticationService {
 
 	public AuthenticationResponse authenticate(AuthenticationRequest authRequest, String requestId)
 			throws TSMSException;
+
+	public AccountStatus getAccountStatusByUserName(String userName, String requestId) throws TSMSException;
+
+	public AccountStatus getAccountStatusByEmail(String email, String requestId) throws TSMSException;
 }
