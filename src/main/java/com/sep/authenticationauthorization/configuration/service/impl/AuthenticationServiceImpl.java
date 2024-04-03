@@ -50,6 +50,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Value("${approvalRequestApi}")
 	private String ApprovalRequestApiUrl;
 
+	@Value("${accountActivationEmailSendApi}")
+	private String AccountActivationEmailSendApiUrl;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
 	@Override
@@ -91,9 +94,17 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				}
 			}
 
-			// Send user activation email.
+			// Call Send user activation email.
+			String recipientName = response.getFirstName().concat(" ").concat(response.getLastName());
+			String recipientEmail = response.getEmail();
 			String activationCode = response.getActivationCode();
-			System.out.println("ACTIVATIONCODE=" + activationCode);
+			ResponseEntity<TSMSResponse> emailSendApiResponse = callAccountActivationEmailSendRequestApi(recipientName,
+					recipientEmail, activationCode, requestId);
+			if (emailSendApiResponse.getBody().getStatus() != 200) {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
+						TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED.getMessage());
+				throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED);
+			}
 
 		} catch (Exception e) {
 
@@ -241,8 +252,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			throw new TSMSException(TSMSError.USER_NOT_FOUND);
 		}
 
-		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByEmail: timeTaken={}|response={}",
-				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] getAccountStatusByEmail: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return response.isPresent() ? response.get().getAccountStatus() : null;
 	}
 
@@ -252,8 +263,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		long startTime = System.currentTimeMillis();
 		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] callApprovalRequestApi: request={}", requestId);
 
-		String requestBodyJson = generateRequestBodyJson(approval.getId(), approval.getEmail(), approval.getContent(),
-				approval.getReason(), approval.getCreatedBy());
+		String requestBodyJson = generateApprovalRequestBodyJson(approval.getId(), approval.getEmail(),
+				approval.getContent(), approval.getReason(), approval.getCreatedBy());
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
@@ -277,9 +288,51 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	}
 
-	private String generateRequestBodyJson(long id, String email, String content, String reason, String createdBy) {
+	private String generateApprovalRequestBodyJson(long id, String email, String content, String reason,
+			String createdBy) {
 		return String.format("{\"id\":%d,\"email\":\"%s\",\"content\":\"%s\",\"reason\":\"%s\",\"createdBy\":\"%s\"}",
 				id, email, content, reason, createdBy);
+	}
+
+	private ResponseEntity<TSMSResponse> callAccountActivationEmailSendRequestApi(String recipientName,
+			String recipientEmail, String activationCode, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info(
+				"START [SERVICE-LAYER] [RequestId={}] callAccountActivationEmailSendRequestApi: recipientName={}|recipientEmail={}|activationCode={}",
+				requestId, recipientName, recipientEmail, activationCode);
+
+		String requestBodyJson = generateAccountActivationEmailSendRequestBodyJson(recipientName, recipientEmail,
+				activationCode);
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+
+		HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
+
+		ResponseEntity<TSMSResponse> response;
+
+		try {
+			response = restTemplate.postForEntity(AccountActivationEmailSendApiUrl, requestEntity, TSMSResponse.class);
+		} catch (Exception e) {
+			LOGGER.error(
+					"ERROR [SERVICE-LAYER] [RequestId={}]  callAccountActivationEmailSendRequestApi : error={}|exception={}",
+					requestId, TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_API_CALL_FAILED.getMessage(), e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_API_CALL_FAILED);
+		}
+
+		LOGGER.info(
+				"END [SERVICE-LAYER] [RequestId={}] callAccountActivationEmailSendRequestApi: timeTaken={}|response={}",
+				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return response;
+
+	}
+
+	private String generateAccountActivationEmailSendRequestBodyJson(String recipientName, String recipientEmail,
+			String activationCode) {
+		return String.format("{\"recipientName\":\"%s\",\"recipientEmail\":\"%s\",\"activationCode\":\"%s\"}",
+				recipientName, recipientEmail, activationCode);
 	}
 
 }
