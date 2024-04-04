@@ -166,8 +166,8 @@ public class CommonUtils {
 	}
 
 	public static boolean checkUserInputNullOrEmpty(LoginRequest request) {
-		return !((request.getUser() == null || request.getUser().isEmpty() || request.getUser().isBlank()
-				|| request.getUser().equals(""))
+		return !((request.getEmail() == null || request.getEmail().isEmpty() || request.getEmail().isBlank()
+				|| request.getEmail().equals(""))
 				|| (request.getPassword() == null || request.getPassword().isEmpty() || request.getPassword().isBlank()
 						|| request.getPassword().equals("")));
 	}

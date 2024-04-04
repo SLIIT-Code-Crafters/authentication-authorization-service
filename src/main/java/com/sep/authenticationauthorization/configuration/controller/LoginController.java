@@ -46,9 +46,9 @@ public class LoginController {
 			throw new TSMSException(TSMSError.MANDOTORY_FIELDS_EMPTY);
 		}
 
-		String userInput = CommonUtils.isUserNameOrEmail(loginRequest.getUser());
+		String userInput = CommonUtils.isUserNameOrEmail(loginRequest.getEmail());
 
-		Boolean success = service.login(userInput, loginRequest.getUser(), loginRequest.getPassword(), requestId);
+		Boolean success = service.login(userInput, loginRequest.getEmail(), loginRequest.getPassword(), requestId);
 
 		if (success) {
 			response.setSuccess(true);
