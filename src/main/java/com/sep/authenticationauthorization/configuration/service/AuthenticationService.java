@@ -25,4 +25,6 @@ public interface AuthenticationService {
 	public AccountStatus getAccountStatusByUserName(String userName, String requestId) throws TSMSException;
 
 	public AccountStatus getAccountStatusByEmail(String email, String requestId) throws TSMSException;
+
+	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException;
 }

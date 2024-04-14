@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -186,6 +187,49 @@ public class AuthenticationController {
 
 		LOGGER.info("END [REST-LAYER] [RequestId={}] authenticate: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/activate")
+	public ResponseEntity<TSMSResponse> activateUserAccount(@RequestParam("requestId") String requestId,
+			@RequestParam("email") String email, @RequestParam("activationCode") String activationCode)
+			throws TSMSException {
+
+		TSMSResponse response = new TSMSResponse();
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [REST-LAYER] [RequestId={}] activateUserAccount: request={}", requestId, email);
+
+		if (email == null || email.equals("") || email.isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : Email Filed is Mandatory", requestId);
+			throw new TSMSException(TSMSError.EMAIL_FIELD_EMPTY);
+		}
+
+		if (activationCode == null || activationCode.equals("") || activationCode.isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : Activation Code is Mandatory",
+					requestId);
+			throw new TSMSException(TSMSError.ACTIVATION_CODE_EMPTY);
+		}
+
+		// Service Call.
+		Boolean result = service.activateUserAccount(email, activationCode, requestId);
+
+		if (result) {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Account Activated Successfully");
+			response.setStatus(TSMSError.OK.getStatus());
+		} else {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Account Activation Failed");
+			response.setStatus(TSMSError.ACCOUNT_ACTIVATION_FAILED.getStatus());
+		}
+
+		response.setTimestamp(LocalDateTime.now().toString());
+
+		LOGGER.info("END [REST-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+
 		return ResponseEntity.ok(response);
 	}
 

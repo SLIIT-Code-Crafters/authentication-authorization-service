@@ -36,7 +36,11 @@ public enum TSMSError {
 	ACCOUNT_APPROVAL_PENDING("032", 202, "Account Approval is in Pending Status"),
 	ACCOUNT_REJECTED("033", 403, "Account is Rejected by System Admin"),
 	ACCOUNT_ACTIVATION_EMAIL_SEND_API_CALL_FAILED("034", 404, "Account Activation Email Sending Api Call Failed"),
-	ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED("035", 404, "Account Activation Email Sending Failed");
+	ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED("035", 404, "Account Activation Email Sending Failed"),
+	ACCOUNT_ACTIVATION_FAILED("036", 404, "Account Activation Failed"),
+	EMAIL_FIELD_EMPTY("037", 404, "Email Field is Empty"),
+	INVALID_ACTIVATION_CODE("038", 400, "Incrorrect Activation Code. Please verify your activation code and try again"),
+	ACTIVATION_CODE_EMPTY("039", 404, "Activation Code is Empty");
 	
 	
 
