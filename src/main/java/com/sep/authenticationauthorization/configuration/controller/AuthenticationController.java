@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sep.authenticationauthorization.configuration.dto.UserDto;
+import com.sep.authenticationauthorization.configuration.dto.activation.AccountActivationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
@@ -192,26 +193,29 @@ public class AuthenticationController {
 
 	@PutMapping("/activate")
 	public ResponseEntity<TSMSResponse> activateUserAccount(@RequestParam("requestId") String requestId,
-			@RequestParam("email") String email, @RequestParam("activationCode") String activationCode)
-			throws TSMSException {
+			@RequestBody AccountActivationRequest accountActivateRequest) throws TSMSException {
 
 		TSMSResponse response = new TSMSResponse();
 		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [REST-LAYER] [RequestId={}] activateUserAccount: request={}", requestId, email);
+		LOGGER.info("START [REST-LAYER] [RequestId={}] activateUserAccount: request={}", requestId,
+				accountActivateRequest.getEmail());
 
-		if (email == null || email.equals("") || email.isEmpty()) {
+		if (accountActivateRequest.getEmail() == null || accountActivateRequest.getEmail().equals("")
+				|| accountActivateRequest.getEmail().isEmpty()) {
 			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : Email Filed is Mandatory", requestId);
 			throw new TSMSException(TSMSError.EMAIL_FIELD_EMPTY);
 		}
 
-		if (activationCode == null || activationCode.equals("") || activationCode.isEmpty()) {
+		if (accountActivateRequest.getActivationCode() == null || accountActivateRequest.getActivationCode().equals("")
+				|| accountActivateRequest.getActivationCode().isEmpty()) {
 			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : Activation Code is Mandatory",
 					requestId);
 			throw new TSMSException(TSMSError.ACTIVATION_CODE_EMPTY);
 		}
 
 		// Service Call.
-		Boolean result = service.activateUserAccount(email, activationCode, requestId);
+		Boolean result = service.activateUserAccount(accountActivateRequest.getEmail(),
+				accountActivateRequest.getActivationCode(), requestId);
 
 		if (result) {
 			response.setSuccess(true);
