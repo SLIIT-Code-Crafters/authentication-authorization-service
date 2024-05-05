@@ -22,6 +22,7 @@ import com.sep.authenticationauthorization.configuration.dto.authentication.Auth
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
 import com.sep.authenticationauthorization.configuration.entity.MasterToken;
 import com.sep.authenticationauthorization.configuration.entity.User;
+import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
 import com.sep.authenticationauthorization.configuration.enums.Gender;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Salutation;
@@ -166,6 +167,7 @@ public class AuthenticationController {
 		}
 
 		Optional<User> user = service.getByEmail(authRequest.getEmail(), requestId);
+		AccountStatus accountStatus;
 		if (user.isEmpty()) {
 			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : User Not Found", requestId);
 			throw new TSMSException(TSMSError.USER_NOT_FOUND);
@@ -175,6 +177,21 @@ public class AuthenticationController {
 						"ERROR [REST-LAYER] [RequestId={}] register : Password incorrect. Please verify your password and try again",
 						requestId);
 				throw new TSMSException(TSMSError.INCORRECT_PASSWORD);
+			} else {
+
+				accountStatus = user.get().getAccountStatus();
+
+				if (accountStatus.equals(AccountStatus.PENDING)) {
+					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] login : Account Approval is in Pending Status",
+							requestId);
+					throw new TSMSException(TSMSError.ACCOUNT_APPROVAL_PENDING);
+				} else if (accountStatus.equals(AccountStatus.INACTIVE)
+						|| accountStatus.equals(AccountStatus.DELETED)) {
+					LOGGER.error(
+							"ERROR [REST-LAYER] [RequestId={}] login : Account is Inactive or Deactivated, Please create a new account",
+							requestId);
+					throw new TSMSException(TSMSError.ACCOUNT_IS_INACTIVE);
+				}
 			}
 		}
 
