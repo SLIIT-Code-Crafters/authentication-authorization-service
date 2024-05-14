@@ -182,9 +182,10 @@ public class AuthenticationController {
 				accountStatus = user.get().getAccountStatus();
 
 				if (accountStatus.equals(AccountStatus.PENDING)) {
-					LOGGER.error("ERROR [REST-LAYER] [RequestId={}] login : Account Approval is in Pending Status",
+					LOGGER.error(
+							"ERROR [REST-LAYER] [RequestId={}] login : Account is not Activated, Please activate your account before login",
 							requestId);
-					throw new TSMSException(TSMSError.ACCOUNT_APPROVAL_PENDING);
+					throw new TSMSException(TSMSError.ACCOUNT_NOT_ACTIVATED);
 				} else if (accountStatus.equals(AccountStatus.INACTIVE)
 						|| accountStatus.equals(AccountStatus.DELETED)) {
 					LOGGER.error(
