@@ -133,7 +133,7 @@ public class AuthenticationController {
 
 		}
 
-		// Service Call.
+		// Service Call .
 		UserDto dto = convertEntityToDto(service.register(convertDtoToEntity(userDto), requestId));
 		response.setRequestId(requestId);
 		response.setSuccess(true);
