@@ -257,6 +257,55 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return response.isPresent() ? response.get().getAccountStatus() : null;
 	}
 
+	@Override
+	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] activateUserAccount: email={}|activationCode={}", requestId,
+				email, activationCode);
+
+		Optional<User> response;
+		Boolean result = Boolean.FALSE;
+		try {
+			response = repository.findByEmail(email);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		if (response.isPresent()) {
+
+			if (response.get().getActivationCode().equals(activationCode)) {
+				response.get().setAccountStatus(AccountStatus.ACTIVE);
+				response.get().setUpdatedDate(LocalDateTime.now());
+				try {
+					repository.save(response.get());
+				} catch (Exception e) {
+					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount :", requestId);
+					e.printStackTrace();
+					throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_FAILED);
+				}
+			} else {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
+						TSMSError.INVALID_ACTIVATION_CODE.getMessage());
+				throw new TSMSException(TSMSError.INVALID_ACTIVATION_CODE);
+			}
+
+		} else {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
+					TSMSError.USER_NOT_FOUND.getMessage());
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		result = Boolean.TRUE;
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return result;
+	}
+
 	private ResponseEntity<TSMSResponse> callApprovalRequestApi(Approval approval, String requestId)
 			throws TSMSException {
 
@@ -327,55 +376,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return response;
 
-	}
-
-	@Override
-	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException {
-
-		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] activateUserAccount: email={}|activationCode={}", requestId,
-				email, activationCode);
-
-		Optional<User> response;
-		Boolean result = Boolean.FALSE;
-		try {
-			response = repository.findByEmail(email);
-		} catch (Exception e) {
-			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : exception={}", requestId,
-					e.getMessage());
-			e.printStackTrace();
-			throw new TSMSException(TSMSError.USER_NOT_FOUND);
-		}
-
-		if (response.isPresent()) {
-
-			if (response.get().getActivationCode().equals(activationCode)) {
-				response.get().setAccountStatus(AccountStatus.ACTIVE);
-				response.get().setUpdatedDate(LocalDateTime.now());
-				try {
-					repository.save(response.get());
-				} catch (Exception e) {
-					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount :", requestId);
-					e.printStackTrace();
-					throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_FAILED);
-				}
-			} else {
-				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
-						TSMSError.INVALID_ACTIVATION_CODE.getMessage());
-				throw new TSMSException(TSMSError.INVALID_ACTIVATION_CODE);
-			}
-
-		} else {
-			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
-					TSMSError.USER_NOT_FOUND.getMessage());
-			throw new TSMSException(TSMSError.USER_NOT_FOUND);
-		}
-
-		result = Boolean.TRUE;
-
-		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
-				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
-		return result;
 	}
 
 	private String generateAccountActivationEmailSendRequestBodyJson(String recipientName, String recipientEmail,
