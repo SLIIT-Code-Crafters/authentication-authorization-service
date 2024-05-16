@@ -112,7 +112,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
-			if (emailSendApiResponse.getBody().getStatus() != 200) {
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
 				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
 						TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED.getMessage());
 				throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED);
@@ -278,7 +278,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				email, activationCode);
 
 		Optional<User> response;
-		Boolean result = Boolean.FALSE;
+		Boolean result;
 		try {
 			response = repository.findByEmail(email);
 		} catch (Exception e) {
@@ -306,7 +306,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 						ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
-						if (emailSendApiResponse.getBody().getStatus() != 200) {
+						if (emailSendApiResponse.getBody() != null
+								&& emailSendApiResponse.getBody().getStatus() != 200) {
 							LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={}",
 									requestId, TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED.getMessage());
 							throw new TSMSException(TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED);
@@ -345,8 +346,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] verifyUserAccount: email={}", requestId, email);
 
 		Optional<User> user;
-		Boolean result = Boolean.FALSE;
-		PasswordRecoveryQueue response = new PasswordRecoveryQueue();
+		Boolean result;
+		PasswordRecoveryQueue response;
 
 		try {
 			user = repository.findByEmail(email);
@@ -385,7 +386,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
-			if (emailSendApiResponse.getBody().getStatus() != 200) {
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
 				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : error={}", requestId,
 						TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED.getMessage());
 				throw new TSMSException(TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED);
@@ -427,12 +428,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 					user.get().setUpdatedDate(LocalDateTime.now());
 					saveResponse = repository.save(user.get());
 
-					if (saveResponse != null) {
-						result = Boolean.TRUE;
-					} else {
-						result = Boolean.FALSE;
-					}
-
 				} else {
 					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={} ", requestId,
 							TSMSError.USER_NOT_FOUND.getMessage());
@@ -451,7 +446,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			throw new TSMSException(TSMSError.OTP_NOT_FOUND);
 		}
 
-		if (result) {
+		if (saveResponse != null) {
 			// Delete OTP from PasswordRecoveryQueue Table
 			pwdRecoveryRepository.delete(otp.get());
 
@@ -463,12 +458,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
-			if (emailSendApiResponse.getBody().getStatus() != 200) {
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
 				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={}", requestId,
 						TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED.getMessage());
 				throw new TSMSException(TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED);
 			}
 
+			result = Boolean.TRUE;
+
+		} else {
+			result = Boolean.FALSE;
 		}
 
 		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] forgotPassword: timeTaken={}|response={}", requestId,
