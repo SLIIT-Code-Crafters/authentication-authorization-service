@@ -447,8 +447,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		}
 
 		if (saveResponse != null) {
-			// Delete OTP from PasswordRecoveryQueue Table
-			pwdRecoveryRepository.delete(otp.get());
+			// Update OTP status to Expired in PasswordRecoveryQueue Table
+			otp.get().setStatus(PasswordRecoveryOTPStatus.EXPIRED);
+			pwdRecoveryRepository.save(otp.get());
 
 			// Send Password Reset Success Email.
 			EmailRequestVo emailRequestVo = new EmailRequestVo();
