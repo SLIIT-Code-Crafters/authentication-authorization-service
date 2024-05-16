@@ -19,24 +19,33 @@ import org.springframework.web.client.RestTemplate;
 
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
+import com.sep.authenticationauthorization.configuration.dto.forgotpw.ForgotPasswordRequest;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
 import com.sep.authenticationauthorization.configuration.entity.Approval;
+import com.sep.authenticationauthorization.configuration.entity.PasswordRecoveryQueue;
 import com.sep.authenticationauthorization.configuration.entity.User;
 import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
+import com.sep.authenticationauthorization.configuration.enums.EmailType;
+import com.sep.authenticationauthorization.configuration.enums.PasswordRecoveryOTPStatus;
 import com.sep.authenticationauthorization.configuration.enums.Roles;
 import com.sep.authenticationauthorization.configuration.enums.Status;
 import com.sep.authenticationauthorization.configuration.exception.TSMSError;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
+import com.sep.authenticationauthorization.configuration.repository.PasswordRecoveryQueueRepository;
 import com.sep.authenticationauthorization.configuration.repository.UserRepository;
 import com.sep.authenticationauthorization.configuration.service.AuthenticationService;
 import com.sep.authenticationauthorization.configuration.service.JwtService;
 import com.sep.authenticationauthorization.configuration.utill.CommonUtils;
+import com.sep.authenticationauthorization.configuration.vo.EmailRequestVo;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
 	@Autowired
 	private UserRepository repository;
+
+	@Autowired
+	private PasswordRecoveryQueueRepository pwdRecoveryRepository;
 
 	@Autowired
 	private JwtService jwtService;
@@ -50,8 +59,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 	@Value("${approvalRequestApi}")
 	private String ApprovalRequestApiUrl;
 
-	@Value("${accountActivationEmailSendApi}")
-	private String AccountActivationEmailSendApiUrl;
+	@Value("${emailSendApi}")
+	private String EmailSendApiUrl;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationServiceImpl.class);
 
@@ -95,12 +104,15 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			}
 
 			// Call Send user activation email.
-			String recipientName = response.getFirstName().concat(" ").concat(response.getLastName());
-			String recipientEmail = response.getEmail();
-			String activationCode = response.getActivationCode();
-			ResponseEntity<TSMSResponse> emailSendApiResponse = callAccountActivationEmailSendRequestApi(recipientName,
-					recipientEmail, activationCode, requestId);
-			if (emailSendApiResponse.getBody().getStatus() != 200) {
+			EmailRequestVo emailRequestVo = new EmailRequestVo();
+			emailRequestVo.setRecipientName(response.getFirstName().concat(" ").concat(response.getLastName()));
+			emailRequestVo.setRecipientEmail(response.getEmail());
+			emailRequestVo.setActivationCode(response.getActivationCode());
+			emailRequestVo.setEmailType(EmailType.ACCOUNT_ACTIVATION);
+
+			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
+
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
 				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
 						TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED.getMessage());
 				throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_FAILED);
@@ -257,6 +269,212 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 		return response.isPresent() ? response.get().getAccountStatus() : null;
 	}
 
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] activateUserAccount: email={}|activationCode={}", requestId,
+				email, activationCode);
+
+		Optional<User> response;
+		Boolean result;
+		try {
+			response = repository.findByEmail(email);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		if (response.isPresent()) {
+
+			if (response.get().getActivationCode().equals(activationCode)) {
+				response.get().setAccountStatus(AccountStatus.ACTIVE);
+				response.get().setUpdatedDate(LocalDateTime.now());
+				try {
+					repository.save(response.get());
+
+					if (!response.get().getRole().equals(Roles.TO)) {
+						// Send Welcome Email
+						EmailRequestVo emailRequestVo = new EmailRequestVo();
+						emailRequestVo.setRecipientName(
+								response.get().getFirstName().concat(" ").concat(response.get().getLastName()));
+						emailRequestVo.setRecipientEmail(response.get().getEmail());
+						emailRequestVo.setEmailType(EmailType.WELCOME);
+
+						ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
+
+						if (emailSendApiResponse.getBody() != null
+								&& emailSendApiResponse.getBody().getStatus() != 200) {
+							LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={}",
+									requestId, TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED.getMessage());
+							throw new TSMSException(TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED);
+						}
+					}
+
+				} catch (Exception e) {
+					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount :", requestId);
+					e.printStackTrace();
+					throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_FAILED);
+				}
+			} else {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
+						TSMSError.INVALID_ACTIVATION_CODE.getMessage());
+				throw new TSMSException(TSMSError.INVALID_ACTIVATION_CODE);
+			}
+
+		} else {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
+					TSMSError.USER_NOT_FOUND.getMessage());
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		result = Boolean.TRUE;
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(result));
+		return result;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean verifyUserAccount(String email, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] verifyUserAccount: email={}", requestId, email);
+
+		Optional<User> user;
+		Boolean result;
+		PasswordRecoveryQueue response;
+
+		try {
+			user = repository.findByEmail(email);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : exception={}", requestId,
+					e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		if (user.isPresent()) {
+
+			String OTPCode = CommonUtils.generateOTPCode();
+
+			PasswordRecoveryQueue pwdRecQueueOTP = new PasswordRecoveryQueue();
+			pwdRecQueueOTP.setEmail(email);
+			pwdRecQueueOTP.setOtp(OTPCode);
+			pwdRecQueueOTP.setStatus(PasswordRecoveryOTPStatus.ACTIVE);
+
+			response = pwdRecoveryRepository.save(pwdRecQueueOTP);
+
+		} else {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : error={} ", requestId,
+					TSMSError.USER_NOT_FOUND.getMessage());
+			throw new TSMSException(TSMSError.USER_NOT_FOUND);
+		}
+
+		if (response != null) {
+
+			// Send email with OTP
+			EmailRequestVo emailRequestVo = new EmailRequestVo();
+			emailRequestVo.setRecipientName(user.get().getFirstName().concat(" ").concat(user.get().getLastName()));
+			emailRequestVo.setRecipientEmail(user.get().getEmail());
+			emailRequestVo.setOtp(response.getOtp());
+			emailRequestVo.setEmailType(EmailType.SEND_OTP);
+
+			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
+
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : error={}", requestId,
+						TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED.getMessage());
+				throw new TSMSException(TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED);
+			}
+			result = Boolean.TRUE;
+
+		} else {
+			result = Boolean.FALSE;
+		}
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] verifyUserAccount: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(result));
+		return result;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean forgotPassword(ForgotPasswordRequest forgotPwdRequest, String requestId) throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] forgotPassword: request={}", requestId,
+				CommonUtils.convertToString(forgotPwdRequest));
+
+		Boolean result = Boolean.FALSE;
+		Optional<PasswordRecoveryQueue> otp;
+		User saveResponse;
+
+		otp = pwdRecoveryRepository.findByEmailAndStatus(forgotPwdRequest.getEmail(), PasswordRecoveryOTPStatus.ACTIVE);
+
+		if (otp.isPresent()) {
+
+			if (otp.get().getOtp().equals(forgotPwdRequest.getOtp())) {
+
+				// Reset Password
+				Optional<User> user = repository.findByEmail(forgotPwdRequest.getEmail());
+				if (user.isPresent()) {
+
+					user.get().setPassword(forgotPwdRequest.getNewPassword());
+					user.get().setUpdatedDate(LocalDateTime.now());
+					saveResponse = repository.save(user.get());
+
+				} else {
+					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={} ", requestId,
+							TSMSError.USER_NOT_FOUND.getMessage());
+					throw new TSMSException(TSMSError.USER_NOT_FOUND);
+				}
+
+			} else {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={} ", requestId,
+						TSMSError.INVALID_OTP.getMessage());
+				throw new TSMSException(TSMSError.INVALID_OTP);
+			}
+
+		} else {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={} ", requestId,
+					TSMSError.OTP_NOT_FOUND.getMessage());
+			throw new TSMSException(TSMSError.OTP_NOT_FOUND);
+		}
+
+		if (saveResponse != null) {
+			// Delete OTP from PasswordRecoveryQueue Table
+			pwdRecoveryRepository.delete(otp.get());
+
+			// Send Password Reset Success Email.
+			EmailRequestVo emailRequestVo = new EmailRequestVo();
+			emailRequestVo.setRecipientName(saveResponse.getFirstName().concat(" ").concat(saveResponse.getLastName()));
+			emailRequestVo.setRecipientEmail(saveResponse.getEmail());
+			emailRequestVo.setEmailType(EmailType.PWD_RESET_SUCCESS);
+
+			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
+
+			if (emailSendApiResponse.getBody() != null && emailSendApiResponse.getBody().getStatus() != 200) {
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={}", requestId,
+						TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED.getMessage());
+				throw new TSMSException(TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED);
+			}
+
+			result = Boolean.TRUE;
+
+		} else {
+			result = Boolean.FALSE;
+		}
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] forgotPassword: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(result));
+		return result;
+	}
+
 	private ResponseEntity<TSMSResponse> callApprovalRequestApi(Approval approval, String requestId)
 			throws TSMSException {
 
@@ -288,100 +506,86 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
 	}
 
+	private ResponseEntity<TSMSResponse> callEmailSendApi(EmailRequestVo emailRequestVo, String requestId)
+			throws TSMSException {
+
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] callEmailSendApi: request={}", requestId,
+				CommonUtils.convertToString(emailRequestVo));
+
+		String requestBodyJson = null;
+		String emailSendUrl = null;
+		HttpHeaders headers = new HttpHeaders();
+		ResponseEntity<TSMSResponse> response;
+
+		try {
+
+			if (emailRequestVo.getEmailType().equals(EmailType.ACCOUNT_ACTIVATION)) {
+
+				requestBodyJson = generateAccountActivationEmailSendRequestBodyJson(emailRequestVo.getRecipientName(),
+						emailRequestVo.getRecipientEmail(), emailRequestVo.getActivationCode());
+
+				emailSendUrl = EmailSendApiUrl.concat("&emailType=").concat(EmailType.ACCOUNT_ACTIVATION.toString());
+			} else if (emailRequestVo.getEmailType().equals(EmailType.SEND_OTP)) {
+
+				requestBodyJson = generateOTPEmailSendRequestBodyJson(emailRequestVo.getRecipientName(),
+						emailRequestVo.getRecipientEmail(), emailRequestVo.getOtp());
+
+				emailSendUrl = EmailSendApiUrl.concat("&emailType=").concat(EmailType.SEND_OTP.toString());
+
+			} else if (emailRequestVo.getEmailType().equals(EmailType.PWD_RESET_SUCCESS)) {
+
+				requestBodyJson = generatePwdResetSuccessAndWelcomeEmailSendRequestBodyJson(
+						emailRequestVo.getRecipientName(), emailRequestVo.getRecipientEmail());
+
+				emailSendUrl = EmailSendApiUrl.concat("&emailType=").concat(EmailType.PWD_RESET_SUCCESS.toString());
+
+			} else if (emailRequestVo.getEmailType().equals(EmailType.WELCOME)) {
+
+				requestBodyJson = generatePwdResetSuccessAndWelcomeEmailSendRequestBodyJson(
+						emailRequestVo.getRecipientName(), emailRequestVo.getRecipientEmail());
+
+				emailSendUrl = EmailSendApiUrl.concat("&emailType=").concat(EmailType.WELCOME.toString());
+
+			}
+
+			headers.setContentType(MediaType.APPLICATION_JSON);
+			HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
+
+			response = restTemplate.postForEntity(emailSendUrl, requestEntity, TSMSResponse.class);
+		} catch (Exception e) {
+			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  callEmailSendApi : error={}|exception={}", requestId,
+					TSMSError.EMAIL_SEND_API_CALL_FAILED.getMessage(), e.getMessage());
+			e.printStackTrace();
+			throw new TSMSException(TSMSError.EMAIL_SEND_API_CALL_FAILED);
+		}
+
+		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] callEmailSendApi: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+		return response;
+
+	}
+
 	private String generateApprovalRequestBodyJson(long id, String email, String content, String reason,
 			String createdBy) {
 		return String.format("{\"id\":%d,\"email\":\"%s\",\"content\":\"%s\",\"reason\":\"%s\",\"createdBy\":\"%s\"}",
 				id, email, content, reason, createdBy);
 	}
 
-	private ResponseEntity<TSMSResponse> callAccountActivationEmailSendRequestApi(String recipientName,
-			String recipientEmail, String activationCode, String requestId) throws TSMSException {
-
-		long startTime = System.currentTimeMillis();
-		LOGGER.info(
-				"START [SERVICE-LAYER] [RequestId={}] callAccountActivationEmailSendRequestApi: recipientName={}|recipientEmail={}|activationCode={}",
-				requestId, recipientName, recipientEmail, activationCode);
-
-		String requestBodyJson = generateAccountActivationEmailSendRequestBodyJson(recipientName, recipientEmail,
-				activationCode);
-
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
-
-		HttpEntity<String> requestEntity = new HttpEntity<>(requestBodyJson, headers);
-
-		ResponseEntity<TSMSResponse> response;
-
-		try {
-			response = restTemplate.postForEntity(AccountActivationEmailSendApiUrl, requestEntity, TSMSResponse.class);
-		} catch (Exception e) {
-			LOGGER.error(
-					"ERROR [SERVICE-LAYER] [RequestId={}]  callAccountActivationEmailSendRequestApi : error={}|exception={}",
-					requestId, TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_API_CALL_FAILED.getMessage(), e.getMessage());
-			e.printStackTrace();
-			throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_EMAIL_SEND_API_CALL_FAILED);
-		}
-
-		LOGGER.info(
-				"END [SERVICE-LAYER] [RequestId={}] callAccountActivationEmailSendRequestApi: timeTaken={}|response={}",
-				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
-		return response;
-
-	}
-
-	@Override
-	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException {
-
-		long startTime = System.currentTimeMillis();
-		LOGGER.info("START [SERVICE-LAYER] [RequestId={}] activateUserAccount: email={}|activationCode={}", requestId,
-				email, activationCode);
-
-		Optional<User> response;
-		Boolean result = Boolean.FALSE;
-		try {
-			response = repository.findByEmail(email);
-		} catch (Exception e) {
-			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : exception={}", requestId,
-					e.getMessage());
-			e.printStackTrace();
-			throw new TSMSException(TSMSError.USER_NOT_FOUND);
-		}
-
-		if (response.isPresent()) {
-
-			if (response.get().getActivationCode().equals(activationCode)) {
-				response.get().setAccountStatus(AccountStatus.ACTIVE);
-				response.get().setUpdatedDate(LocalDateTime.now());
-				try {
-					repository.save(response.get());
-				} catch (Exception e) {
-					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount :", requestId);
-					e.printStackTrace();
-					throw new TSMSException(TSMSError.ACCOUNT_ACTIVATION_FAILED);
-				}
-			} else {
-				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
-						TSMSError.INVALID_ACTIVATION_CODE.getMessage());
-				throw new TSMSException(TSMSError.INVALID_ACTIVATION_CODE);
-			}
-
-		} else {
-			LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={} ", requestId,
-					TSMSError.USER_NOT_FOUND.getMessage());
-			throw new TSMSException(TSMSError.USER_NOT_FOUND);
-		}
-
-		result = Boolean.TRUE;
-
-		LOGGER.info("END [SERVICE-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
-				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
-		return result;
-	}
-
 	private String generateAccountActivationEmailSendRequestBodyJson(String recipientName, String recipientEmail,
 			String activationCode) {
 		return String.format("{\"recipientName\":\"%s\",\"recipientEmail\":\"%s\",\"activationCode\":\"%s\"}",
 				recipientName, recipientEmail, activationCode);
+	}
+
+	private String generateOTPEmailSendRequestBodyJson(String recipientName, String recipientEmail, String otp) {
+		return String.format("{\"recipientName\":\"%s\",\"recipientEmail\":\"%s\",\"otp\":\"%s\"}", recipientName,
+				recipientEmail, otp);
+	}
+
+	private String generatePwdResetSuccessAndWelcomeEmailSendRequestBodyJson(String recipientName,
+			String recipientEmail) {
+		return String.format("{\"recipientName\":\"%s\",\"recipientEmail\":\"%s\"}", recipientName, recipientEmail);
 	}
 
 }

@@ -19,6 +19,7 @@ import com.sep.authenticationauthorization.configuration.dto.UserDto;
 import com.sep.authenticationauthorization.configuration.dto.activation.AccountActivationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
+import com.sep.authenticationauthorization.configuration.dto.forgotpw.ForgotPasswordRequest;
 import com.sep.authenticationauthorization.configuration.dto.response.TSMSResponse;
 import com.sep.authenticationauthorization.configuration.entity.MasterToken;
 import com.sep.authenticationauthorization.configuration.entity.User;
@@ -250,6 +251,99 @@ public class AuthenticationController {
 		response.setTimestamp(LocalDateTime.now().toString());
 
 		LOGGER.info("END [REST-LAYER] [RequestId={}] activateUserAccount: timeTaken={}|response={}", requestId,
+				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/forgot-password/send-otp")
+	public ResponseEntity<TSMSResponse> accountVerificationAndSendOTP(@RequestParam("requestId") String requestId,
+			@RequestParam("email") String email) throws TSMSException {
+
+		TSMSResponse response = new TSMSResponse();
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [REST-LAYER] [RequestId={}] accountVerificationAndSendOTP: request={}", requestId, email);
+
+		if (email == null || email.equals("") || email.isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] accountVerificationAndSendOTP : Email Filed is Mandatory",
+					requestId);
+			throw new TSMSException(TSMSError.EMAIL_FIELD_EMPTY);
+		}
+
+		// Service Call.
+		Boolean result = service.verifyUserAccount(email, requestId);
+
+		if (result) {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Account Verified and OPT Sent Successfully");
+			response.setStatus(TSMSError.OK.getStatus());
+		} else {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Account Verification Failed");
+			response.setStatus(TSMSError.ACCOUNT_VERIFICATION_FAILED.getStatus());
+		}
+
+		response.setTimestamp(LocalDateTime.now().toString());
+
+		LOGGER.info("END [REST-LAYER] [RequestId={}] accountVerificationAndSendOTP: timeTaken={}|response={}",
+				requestId, CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
+
+		return ResponseEntity.ok(response);
+	}
+
+	@PostMapping("/forgot-password/reset")
+	public ResponseEntity<TSMSResponse> forgotPassword(@RequestParam("requestId") String requestId,
+			@RequestBody ForgotPasswordRequest forgotPwdRequest) throws TSMSException {
+
+		TSMSResponse response = new TSMSResponse();
+		long startTime = System.currentTimeMillis();
+		LOGGER.info("START [REST-LAYER] [RequestId={}] forgotPassword: request={}", requestId, forgotPwdRequest);
+
+		if (forgotPwdRequest.getEmail() == null || forgotPwdRequest.getEmail().equals("")
+				|| forgotPwdRequest.getEmail().isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : Email Filed is Mandatory", requestId);
+			throw new TSMSException(TSMSError.EMAIL_FIELD_EMPTY);
+		}
+
+		if (forgotPwdRequest.getOtp() == null || forgotPwdRequest.getOtp().equals("")
+				|| forgotPwdRequest.getOtp().isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : OTP is Mandatory", requestId);
+			throw new TSMSException(TSMSError.OTP_EMPTY);
+		}
+
+		if (forgotPwdRequest.getNewPassword() == null || forgotPwdRequest.getNewPassword().equals("")
+				|| forgotPwdRequest.getNewPassword().isEmpty()) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : New Password Filed is Mandatory",
+					requestId);
+			throw new TSMSException(TSMSError.PASSWORD_FIELD_EMPTY);
+
+		} else if (!CommonUtils.isValidPassword(forgotPwdRequest.getNewPassword())) {
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : Invalid Password", requestId);
+			throw new TSMSException(TSMSError.INVALID_PASSWORD);
+		}
+
+		// Service Call.
+
+		forgotPwdRequest.setNewPassword(passwordEncoder.encode(forgotPwdRequest.getNewPassword()));
+		Boolean result = service.forgotPassword(forgotPwdRequest, requestId);
+
+		if (result) {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Password has been Reset Successfully");
+			response.setStatus(TSMSError.OK.getStatus());
+		} else {
+			response.setSuccess(true);
+			response.setRequestId(requestId);
+			response.setMessage("Password Reset Failed");
+			response.setStatus(TSMSError.PASSWORD_RESET_FAILED.getStatus());
+		}
+
+		response.setTimestamp(LocalDateTime.now().toString());
+
+		LOGGER.info("END [REST-LAYER] [RequestId={}] forgotPassword: timeTaken={}|response={}", requestId,
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 
 		return ResponseEntity.ok(response);

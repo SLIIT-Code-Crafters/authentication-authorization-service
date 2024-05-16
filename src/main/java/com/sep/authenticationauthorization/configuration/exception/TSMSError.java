@@ -40,7 +40,17 @@ public enum TSMSError {
 	ACCOUNT_ACTIVATION_FAILED("036", 404, "Account Activation Failed"),
 	EMAIL_FIELD_EMPTY("037", 404, "Email Field is Empty"),
 	INVALID_ACTIVATION_CODE("038", 400, "Incrorrect Activation Code. Please verify your activation code and try again"),
-	ACTIVATION_CODE_EMPTY("039", 404, "Activation Code is Empty");
+	ACTIVATION_CODE_EMPTY("039", 404, "Activation Code is Empty"),
+	ACCOUNT_VERIFICATION_FAILED("040", 404, "Account Verification Failed"),
+	PASSWORD_RESET_FAILED("041", 404, "Password Reset Failed"),
+	OTP_EMPTY("042", 404, "OTP is Empty"),
+	PASSWORD_FIELD_EMPTY("043", 404, "Password Field is Empty"),
+	OTP_NOT_FOUND("044", 404, "OTP Not Found"),
+	INVALID_OTP("045", 400, "Incrorrect OTP. Please verify your OTP and try again"),
+	EMAIL_SEND_API_CALL_FAILED("046", 404, "Email Sending Api Call Failed"),
+	WELCOME_EMAIL_SEND_API_CALL_FAILED("047", 404, "Welcome Email Sending Api Call Failed"),
+	OTP_EMAIL_SEND_API_CALL_FAILED("048", 404, "OTP Email Sending Api Call Failed"),
+	PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED("049", 404, "Password Reset Success Email Sending Api Call Failed");
 	
 	
 
