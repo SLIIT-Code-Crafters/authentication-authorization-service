@@ -307,8 +307,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 						ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
 						if (emailSendApiResponse.getBody().getStatus() != 200) {
-							LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
-									TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED.getMessage());
+							LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  activateUserAccount : error={}",
+									requestId, TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED.getMessage());
 							throw new TSMSException(TSMSError.WELCOME_EMAIL_SEND_API_CALL_FAILED);
 						}
 					}
@@ -386,7 +386,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
 			if (emailSendApiResponse.getBody().getStatus() != 200) {
-				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : error={}", requestId,
 						TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED.getMessage());
 				throw new TSMSException(TSMSError.OTP_EMAIL_SEND_API_CALL_FAILED);
 			}
@@ -434,7 +434,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 					}
 
 				} else {
-					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  verifyUserAccount : error={} ", requestId,
+					LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={} ", requestId,
 							TSMSError.USER_NOT_FOUND.getMessage());
 					throw new TSMSException(TSMSError.USER_NOT_FOUND);
 				}
@@ -464,7 +464,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 			ResponseEntity<TSMSResponse> emailSendApiResponse = callEmailSendApi(emailRequestVo, requestId);
 
 			if (emailSendApiResponse.getBody().getStatus() != 200) {
-				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  register : error={}", requestId,
+				LOGGER.error("ERROR [SERVICE-LAYER] [RequestId={}]  forgotPassword : error={}", requestId,
 						TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED.getMessage());
 				throw new TSMSException(TSMSError.PWD_RESET_SUCCESS_EMAIL_SEND_API_CALL_FAILED);
 			}
@@ -505,12 +505,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return response;
 
-	}
-
-	private String generateApprovalRequestBodyJson(long id, String email, String content, String reason,
-			String createdBy) {
-		return String.format("{\"id\":%d,\"email\":\"%s\",\"content\":\"%s\",\"reason\":\"%s\",\"createdBy\":\"%s\"}",
-				id, email, content, reason, createdBy);
 	}
 
 	private ResponseEntity<TSMSResponse> callEmailSendApi(EmailRequestVo emailRequestVo, String requestId)
@@ -571,6 +565,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 				CommonUtils.getExecutionTime(startTime), CommonUtils.convertToString(response));
 		return response;
 
+	}
+
+	private String generateApprovalRequestBodyJson(long id, String email, String content, String reason,
+			String createdBy) {
+		return String.format("{\"id\":%d,\"email\":\"%s\",\"content\":\"%s\",\"reason\":\"%s\",\"createdBy\":\"%s\"}",
+				id, email, content, reason, createdBy);
 	}
 
 	private String generateAccountActivationEmailSendRequestBodyJson(String recipientName, String recipientEmail,

@@ -309,18 +309,18 @@ public class AuthenticationController {
 
 		if (forgotPwdRequest.getOtp() == null || forgotPwdRequest.getOtp().equals("")
 				|| forgotPwdRequest.getOtp().isEmpty()) {
-			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : OTP is Mandatory", requestId);
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : OTP is Mandatory", requestId);
 			throw new TSMSException(TSMSError.OTP_EMPTY);
 		}
 
 		if (forgotPwdRequest.getNewPassword() == null || forgotPwdRequest.getNewPassword().equals("")
 				|| forgotPwdRequest.getNewPassword().isEmpty()) {
-			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] activateUserAccount : New Password Filed is Mandatory",
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : New Password Filed is Mandatory",
 					requestId);
 			throw new TSMSException(TSMSError.PASSWORD_FIELD_EMPTY);
 
 		} else if (!CommonUtils.isValidPassword(forgotPwdRequest.getNewPassword())) {
-			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] register : Invalid Password", requestId);
+			LOGGER.error("ERROR [REST-LAYER] [RequestId={}] forgotPassword : Invalid Password", requestId);
 			throw new TSMSException(TSMSError.INVALID_PASSWORD);
 		}
 
