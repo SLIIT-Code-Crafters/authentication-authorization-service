@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationRequest;
 import com.sep.authenticationauthorization.configuration.dto.authentication.AuthenticationResponse;
+import com.sep.authenticationauthorization.configuration.dto.forgotpw.ForgotPasswordRequest;
 import com.sep.authenticationauthorization.configuration.entity.User;
 import com.sep.authenticationauthorization.configuration.enums.AccountStatus;
 import com.sep.authenticationauthorization.configuration.exception.TSMSException;
@@ -27,4 +28,8 @@ public interface AuthenticationService {
 	public AccountStatus getAccountStatusByEmail(String email, String requestId) throws TSMSException;
 
 	public Boolean activateUserAccount(String email, String activationCode, String requestId) throws TSMSException;
+
+	public Boolean verifyUserAccount(String email, String requestId) throws TSMSException;
+
+	public Boolean forgotPassword(ForgotPasswordRequest forgotPwdRequest, String requestId) throws TSMSException;
 }
